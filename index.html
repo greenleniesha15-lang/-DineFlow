@@ -176,9 +176,6 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 .confirm-icon{font-size:56px;margin-bottom:16px}
 .confirm-order-num{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;color:var(--accent);letter-spacing:2px;margin:12px 0}
 .confirm-guest{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);padding:6px 16px;border-radius:20px;font-size:13px;margin-bottom:20px}
-.confirm-steps{display:flex;flex-direction:column;gap:8px;margin:20px 0;text-align:left}
-.confirm-step{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);padding:8px 12px;border-radius:9px;background:var(--surface2)}
-.confirm-step.active-step{color:var(--accent);background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.2)}
 .waiter-confirm-box{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.3);border-radius:var(--r);padding:16px;margin:16px 0}
 .waiter-confirm-box p{font-size:13px;color:var(--muted);margin-bottom:10px}
 .waiter-code{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--gold);letter-spacing:6px}
@@ -206,6 +203,22 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 .stage-label{font-size:11px;color:var(--muted)}
 .stage-node.done .stage-label,.stage-node.active .stage-label{color:var(--text)}
 
+/* ── STAGE DETAIL CARD ── */
+.stage-detail-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin:12px 0;display:flex;align-items:center;gap:14px}
+.stage-detail-icon{font-size:32px;flex-shrink:0}
+.stage-detail-name{font-family:'Syne',sans-serif;font-size:16px;font-weight:700}
+.stage-detail-desc{font-size:12px;color:var(--muted);margin-top:2px}
+.stage-timeline{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.stage-timeline-row{display:flex;align-items:center;gap:10px;font-size:12px;padding:7px 10px;border-radius:8px}
+.stage-timeline-row.done{color:var(--green);background:rgba(34,197,94,.05)}
+.stage-timeline-row.active{color:var(--accent);background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.2);font-weight:500}
+.stage-timeline-row.upcoming{color:var(--muted);background:transparent}
+.stage-tl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.stage-tl-dot.done{background:var(--green)}
+.stage-tl-dot.active{background:var(--accent);animation:pulse 1.4s infinite}
+.stage-tl-dot.upcoming{background:var(--surface2);border:1px solid var(--border)}
+.stage-tl-time{margin-left:auto;font-size:11px;color:var(--muted)}
+
 /* COUNTDOWN RING */
 .ring-wrap{display:flex;flex-direction:column;align-items:center;margin:20px 0}
 .ring-svg{transform:rotate(-90deg)}
@@ -224,6 +237,9 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 .alert-almost{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.25);color:var(--gold)}
 .alert-ready{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.25);color:var(--green)}
 .alert-info{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.25);color:var(--blue)}
+
+/* SMS NOTIFICATION BANNER */
+.sms-notif-banner{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--blue);display:flex;align-items:center;gap:8px;margin-bottom:12px}
 
 /* ORDER CARD (customer) */
 .order-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:12px;transition:border-color .2s}
@@ -625,15 +641,20 @@ const RESTAURANTS = [
 ];
 
 const STAGES = [
-  { key:'received',  label:'Order\nReceived',  icon:'📋', color:'var(--blue)'  },
-  { key:'preparing', label:'Preparing\nFood',  icon:'👨‍🍳', color:'var(--accent)' },
-  { key:'cooking',   label:'Cooking',          icon:'🔥', color:'var(--accent2)'},
-  { key:'plating',   label:'Plating /\nPacking',icon:'🍽', color:'var(--purple)' },
-  { key:'ready',     label:'Ready!',           icon:'✅', color:'var(--green)'  },
+  { key:'received',  label:'Order\nReceived',   icon:'📋', color:'var(--blue)',
+    desc:'Your order has been received and is queued.' },
+  { key:'preparing', label:'Preparing\nFood',   icon:'👨‍🍳', color:'var(--accent)',
+    desc:'The kitchen is prepping all your ingredients.' },
+  { key:'cooking',   label:'Cooking',           icon:'🔥', color:'var(--accent2)',
+    desc:'Your food is on the heat — smells amazing!' },
+  { key:'plating',   label:'Plating /\nPacking', icon:'🍽', color:'var(--purple)',
+    desc:'Your meal is being plated and finished.' },
+  { key:'ready',     label:'Ready!',            icon:'✅', color:'var(--green)',
+    desc:'Order is ready. Your waiter is on the way!' },
 ];
 
 /* ═══════════════════════════════════
-   STATE (persistent across soft refreshes via sessionStorage)
+   STATE
 ═══════════════════════════════════ */
 const State = (() => {
   const KEY = 'df_state_v2';
@@ -641,11 +662,10 @@ const State = (() => {
     role: null, currentUser: null, guestCounter: 0,
     points: 0, cart: [], orders: [], reservations: [],
     smsLog: [], notifications: [],
-    liveOrders: [] // kitchen queue
+    liveOrders: []
   };
   let _s = defaults;
 
-  // Seed some demo kitchen orders
   const seedLive = () => {
     if (_s.liveOrders.length > 0) return;
     const now = Date.now();
@@ -676,11 +696,7 @@ const State = (() => {
   load();
 
   return new Proxy(_s, {
-    set(target, prop, val) {
-      target[prop] = val;
-      save();
-      return true;
-    },
+    set(target, prop, val) { target[prop] = val; save(); return true; },
     get(target, prop) { return target[prop]; }
   });
 })();
@@ -739,6 +755,7 @@ const Notify = {
   }
 };
 
+/* ── SMS helper: sends to the GUEST's phone ── */
 const SMS = {
   send(phone, message) {
     const entry = { id:'S'+Date.now(), phone, message, sentAt:new Date().toISOString() };
@@ -746,6 +763,14 @@ const SMS = {
     State.smsLog = [entry, ...State.smsLog];
     console.log('[SMS to '+phone+']:', message);
     Toast.show('📱 SMS sent to '+phone, 'info');
+  },
+
+  /* Send a status update specifically to the guest who placed an order */
+  notifyGuest(order, message) {
+    const phone = order.phone || (State.currentUser?.id === order.customerId ? State.currentUser?.phone : null);
+    if (phone) {
+      this.send(phone, message);
+    }
   }
 };
 
@@ -762,7 +787,6 @@ const Auth = {
     if (!name) { errEl.textContent='Please enter your name.'; errEl.style.display='block'; return; }
     errEl.style.display = 'none';
 
-    // Persist guest counter in State
     State.guestCounter = (State.guestCounter || 0) + 1;
     const guestNum = State.guestCounter;
     const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2) || name[0].toUpperCase();
@@ -776,9 +800,9 @@ const Auth = {
     App.go('home');
     Toast.show('👋 Welcome '+name+'! You are Guest #'+guestNum, 'success');
 
-    // Send welcome SMS if phone provided
+    // Welcome SMS to the GUEST
     if (phone) {
-      SMS.send(phone, 'Welcome to DineFlow, '+name+'! You are Guest #'+guestNum+'. Place your order and track it live.');
+      SMS.send(phone, '🍽 Welcome to DineFlow, '+name+'! You are Guest #'+guestNum+'. Place your order and track it live. We\'ll SMS you at every stage!');
     }
   },
 
@@ -792,14 +816,12 @@ const Auth = {
     pill.textContent = '#'+u.guestNum;
     pill.style.display = '';
 
-    // Show customer nav links
     ['tracker-link','myorders-link'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = '';
     });
     document.querySelectorAll('[data-view="orders"]').forEach(el=>el.style.display='');
 
-    // Bind all nav links
     document.querySelectorAll('.nav-link').forEach(btn=>{
       btn.onclick = () => App.go(btn.dataset.view);
     });
@@ -851,7 +873,6 @@ const Auth = {
   _applyStaffUI() {
     const staffBtn = document.getElementById('staff-nav-btn');
     if (staffBtn){ staffBtn.textContent='✓ Staff'; staffBtn.style.cursor='default'; staffBtn.onclick=null; }
-    // Remove customer links, add staff dashboard link
     ['tracker-link','myorders-link'].forEach(id=>{
       const el=document.getElementById(id); if(el) el.style.display='none';
     });
@@ -863,7 +884,6 @@ const Auth = {
       btn.textContent='🛠 Dashboard';
       navLinks.appendChild(btn);
     }
-    // Bell
     const navUser = document.querySelector('.nav-user');
     if (!document.getElementById('notif-bell')) {
       const bell = document.createElement('div');
@@ -1078,11 +1098,13 @@ const Cart = {
       </div>`).join('');
 
     const sub = this.subtotal();
+    const phone = State.currentUser?.phone || '';
     cf.innerHTML = `
       <div class="phone-field">
-        <label class="form-label">📱 Phone for SMS updates</label>
+        <label class="form-label">📱 Your phone for SMS order updates</label>
         <input type="tel" class="form-input" id="cart-phone" placeholder="+1 876 555 0100"
-          value="${State.currentUser?.phone||''}" style="margin-bottom:10px"/>
+          value="${phone}" style="margin-bottom:4px"/>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px">📲 You'll receive SMS alerts at each stage of your order.</div>
       </div>
       <div class="cart-total-row"><span>Total</span><span style="color:var(--accent)">J$${sub.toLocaleString()}</span></div>
       <button class="btn-primary" onclick="Cart.checkout()">Place Order — J$${sub.toLocaleString()}</button>`;
@@ -1092,9 +1114,9 @@ const Cart = {
     if (State.cart.length===0) return;
     const u = State.currentUser || { name:'Guest', id:'g0', guestNum:0, phone:null };
 
-    // Save phone from cart
+    // Save phone from cart input back to user profile
     const phoneInput = document.getElementById('cart-phone');
-    if (phoneInput && phoneInput.value && State.currentUser) {
+    if (phoneInput && phoneInput.value.trim() && State.currentUser) {
       State.currentUser = { ...State.currentUser, phone: phoneInput.value.trim() };
     }
 
@@ -1104,15 +1126,14 @@ const Cart = {
     const restId = State.cart[0].restId;
     const rest = RESTAURANTS.find(x=>x.id===restId);
     const total = this.subtotal();
-
-    // Waiter confirm code (4-digit)
     const confirmCode = String(1000+Math.floor(Math.random()*9000));
+    const guestPhone = State.currentUser?.phone || u.phone;
 
     const newOrder = {
       id: orderId, orderNum,
       restaurantId: restId, restaurantName: rest?.name||'Island Vibes',
       customer: u.name, customerId: u.id,
-      guestNum: u.guestNum, phone: State.currentUser?.phone || u.phone,
+      guestNum: u.guestNum, phone: guestPhone,
       items: State.cart.map(x=>({name:x.name,qty:x.qty,price:x.price})),
       total, status:'pending', approval:'pending',
       placedAt:new Date().toISOString(),
@@ -1130,19 +1151,20 @@ const Cart = {
     this.close();
     Loyalty.updatePts();
 
-    // SMS to customer
-    if (newOrder.phone) {
-      SMS.send(newOrder.phone, 'Hi '+u.name+'! Order '+orderId+' placed at '+rest?.name+'. Est: '+newOrder.estMins+' mins. Track at DineFlow.');
+    // ── SMS directly to the GUEST ──
+    if (guestPhone) {
+      SMS.send(guestPhone,
+        '🍽 Hi '+u.name+'! Your order '+orderId+' at '+rest?.name+' is placed & awaiting staff approval. Est. '+newOrder.estMins+' mins. We\'ll text you at every stage!'
+      );
     }
-    // Staff notification
-    Notify.send('📦 New Order Pending: '+orderId,
-      'Guest #'+u.guestNum+' — '+u.name+'\nPhone: '+(newOrder.phone||'N/A')+'\nItems: '+newOrder.items.map(i=>i.qty+'× '+i.name).join(', ')+'\nTotal: J$'+total.toLocaleString()+'\nTime: '+new Date().toLocaleString(),'order');
 
-    // Show order confirmation & badge
+    // Staff notification (internal only)
+    Notify.send('📦 New Order Pending: '+orderId,
+      'Guest #'+u.guestNum+' — '+u.name+'\nPhone: '+(guestPhone||'N/A')+'\nItems: '+newOrder.items.map(i=>i.qty+'× '+i.name).join(', ')+'\nTotal: J$'+total.toLocaleString()+'\nTime: '+new Date().toLocaleString(),'order');
+
     const mob = document.getElementById('mo-badge');
     if (mob) { mob.style.display='inline-flex'; mob.textContent='!'; }
 
-    // Update staff approval badge
     const apBadge = document.getElementById('ap-badge');
     if (apBadge) {
       const pCount = (State.orders||[]).filter(o=>o.approval==='pending').length;
@@ -1168,6 +1190,14 @@ const Confirmation = {
         <div class="confirm-guest">👤 ${order.customer} &nbsp;·&nbsp; <span style="color:var(--accent);font-weight:700">Guest #${order.guestNum}</span></div>
         <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Your order number matches your guest number — show this to your waiter.</p>
 
+        ${order.phone ? `
+        <div class="sms-notif-banner">
+          📱 SMS updates will be sent to <strong>${order.phone}</strong> at each stage of your order.
+        </div>` : `
+        <div style="background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--gold);margin-bottom:12px">
+          ⚠️ No phone number saved — you won't receive SMS updates. Add a phone in My Orders.
+        </div>`}
+
         <div class="waiter-confirm-box">
           <p>🤝 <strong>Both you and your waiter must confirm</strong> this order number to proceed.</p>
           <div class="waiter-code">${order.confirmCode}</div>
@@ -1176,7 +1206,6 @@ const Confirmation = {
 
         <div style="background:var(--surface2);border-radius:var(--r);padding:14px;margin:16px 0;font-size:13px;color:var(--muted)">
           ⏱ Estimated time: <strong style="color:var(--text)">${order.estMins} minutes</strong>
-          ${order.phone ? '<br>📱 SMS sent to '+order.phone : ''}
         </div>
 
         <h4 style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px">Your Order</h4>
@@ -1216,7 +1245,6 @@ const Tracker = {
 
   _renderLookup(el) {
     const u = State.currentUser;
-    // Auto-show if customer has active orders
     const myActive = u ? (State.orders||[]).filter(o=>o.customerId===u.id && o.approval==='approved' && o.status!=='cancelled') : [];
     const liveMatch = State.liveOrders?.find(o => u && o.guestNum === u.guestNum);
 
@@ -1285,7 +1313,6 @@ const Tracker = {
 
     if (!order && !liveOrder) { this._activeOrderId=null; this._renderLookup(el); return; }
 
-    // Start ticker
     clearInterval(this._ticker);
     if (liveOrder && !liveOrder.paused) {
       this._ticker = setInterval(()=>this._tick(), 1000);
@@ -1304,6 +1331,7 @@ const Tracker = {
     }
   },
 
+  /* ── ENHANCED LIVE TRACKER with stage detail card ── */
   _renderLiveCard(el, o, name, gn, items, restaurant, oid) {
     const stIdx = STAGES.findIndex(s=>s.key===o.stage);
     const pct = o.totalSecs>0 ? Math.min(100, Math.round((1-o.remainingSecs/o.totalSecs)*100)) : 100;
@@ -1312,11 +1340,47 @@ const Tracker = {
     const R=68, C=2*Math.PI*R, offset=C-(pct/100)*C;
     const urg = pct>=85||o.delayFlag ? '#ef4444' : pct>=60 ? '#f59e0b' : '#22c55e';
 
+    // Pipeline dots
     const stageHtml = STAGES.map((s,i)=>`
       <div class="stage-node ${i<stIdx?'done':i===stIdx?'active':''}">
         <div class="stage-dot">${i<stIdx?'✓':s.icon}</div>
         <div class="stage-label">${s.label.replace('\n','<br>')}</div>
       </div>`).join('');
+
+    // Stage timeline list — shows each stage with status & approximate time
+    const nowTs = Date.now();
+    const placedTs = new Date(o.placedAt).getTime();
+    const totalMs = o.totalSecs * 1000;
+    const stageTimeline = STAGES.map((s,i) => {
+      let statusClass, dotClass, timeStr='';
+      if (i < stIdx) {
+        statusClass='done'; dotClass='done';
+        // Estimate when each done stage passed
+        const fracStart = i / (STAGES.length-1);
+        const estTs = placedTs + fracStart * totalMs;
+        timeStr = new Date(estTs).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      } else if (i === stIdx) {
+        statusClass='active'; dotClass='active';
+        timeStr = 'Now';
+      } else {
+        statusClass='upcoming'; dotClass='upcoming';
+        const fracFuture = (i - stIdx) * (1/(STAGES.length-1));
+        const etaSecs = o.remainingSecs * (fracFuture / Math.max(0.01, 1 - stIdx/(STAGES.length-1)));
+        const etaMins = Math.ceil(etaSecs / 60);
+        timeStr = isReady ? '' : '~'+etaMins+'m';
+      }
+      return `<div class="stage-timeline-row ${statusClass}">
+        <div class="stage-tl-dot ${dotClass}"></div>
+        <span style="font-size:16px">${s.icon}</span>
+        <div style="flex:1">
+          <div style="font-weight:${i===stIdx?'600':'400'}">${s.label.replace('\n',' ')}</div>
+          ${i===stIdx ? `<div style="font-size:11px;color:var(--muted);margin-top:1px">${s.desc}</div>` : ''}
+        </div>
+        <span class="stage-tl-time">${timeStr}</span>
+      </div>`;
+    }).join('');
+
+    const currentStage = STAGES[stIdx];
 
     el.innerHTML = `
       <div style="max-width:560px;margin:0 auto">
@@ -1335,6 +1399,7 @@ const Tracker = {
         ${!o.delayFlag&&o.stage==='plating'?'<div class="alert-banner alert-almost">🍽 Almost ready — your food is being plated!</div>':''}
         ${isReady?'<div class="alert-banner alert-ready">✅ Your order is ready! Your waiter is bringing it to you.</div>':''}
 
+        <!-- Timer ring & pipeline -->
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:16px">
           <div class="ring-wrap">
             <div class="ring-outer">
@@ -1361,10 +1426,28 @@ const Tracker = {
           <div class="stage-pipeline">${stageHtml}</div>
         </div>
 
+        <!-- Current stage detail card -->
+        <div class="stage-detail-card" style="border-color:${currentStage.color};border-left:3px solid ${currentStage.color}">
+          <div class="stage-detail-icon">${currentStage.icon}</div>
+          <div>
+            <div class="stage-detail-name" style="color:${currentStage.color}">${currentStage.label.replace('\n',' ')}</div>
+            <div class="stage-detail-desc">${currentStage.desc}</div>
+          </div>
+        </div>
+
+        <!-- Stage-by-stage timeline -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px">
+          <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px">Order Journey</div>
+          <div class="stage-timeline">${stageTimeline}</div>
+        </div>
+
+        <!-- Items -->
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
           <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">Your order</div>
           ${items.map(i=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--border)"><span>${i.qty}× ${i.name}</span></div>`).join('')}
         </div>
+
+        ${o.phone ? `<div class="sms-notif-banner" style="margin-top:12px">📱 SMS updates are being sent to <strong>${o.phone}</strong></div>` : ''}
       </div>`;
   },
 
@@ -1372,6 +1455,23 @@ const Tracker = {
     const approval = order.approval||'pending';
     const approvalColors = {pending:'var(--gold)',approved:'var(--green)',declined:'var(--red)'};
     const approvalLabels = {pending:'⏳ Awaiting staff approval',approved:'✅ Order approved',declined:'❌ Order declined'};
+
+    // Stage timeline for approved orders (show pending stages grayed out)
+    let stageTimeline = '';
+    if (approval === 'approved') {
+      stageTimeline = `
+        <div style="background:var(--surface2);border-radius:var(--r);padding:14px;margin:14px 0">
+          <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">Order Journey</div>
+          <div class="stage-timeline">
+            ${STAGES.map((s,i)=>`<div class="stage-timeline-row ${i===0?'active':'upcoming'}">
+              <div class="stage-tl-dot ${i===0?'active':'upcoming'}"></div>
+              <span style="font-size:15px">${s.icon}</span>
+              <div style="flex:1"><div style="font-size:13px">${s.label.replace('\n',' ')}</div></div>
+              <span class="stage-tl-time">${i===0?'Now':'—'}</span>
+            </div>`).join('')}
+          </div>
+        </div>`;
+    }
 
     el.innerHTML = `
       <div style="max-width:560px;margin:0 auto">
@@ -1383,6 +1483,8 @@ const Tracker = {
           <button class="btn-ghost" style="padding:6px 12px;font-size:12px" onclick="Tracker._activeOrderId=null;Tracker.render()">← Back</button>
         </div>
 
+        ${order.phone ? `<div class="sms-notif-banner">📱 SMS updates will be sent to <strong>${order.phone}</strong></div>` : ''}
+
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:16px;text-align:center">
           <div style="font-size:36px;margin-bottom:12px">${approval==='approved'?'✅':approval==='declined'?'❌':'⏳'}</div>
           <div style="font-size:16px;font-weight:600;color:${approvalColors[approval]}">${approvalLabels[approval]}</div>
@@ -1390,6 +1492,8 @@ const Tracker = {
           ${approval==='approved'?'<p style="font-size:13px;color:var(--muted);margin-top:8px">Your order is being prepared!</p>':''}
           ${approval==='declined'?'<p style="font-size:13px;color:var(--muted);margin-top:8px">Please speak to a staff member to re-order.</p>':''}
         </div>
+
+        ${stageTimeline}
 
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
           <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">Your order</div>
@@ -1419,17 +1523,20 @@ const Tracker = {
     }
   },
 
+  /* ── Notify the GUEST via SMS ── */
   _notifyAlmost(o) {
     if (o.notifiedAlmost) return;
     o.notifiedAlmost=true;
     Toast.show('⏱ Table '+o.tableNo+': almost ready!','warn');
-    if (o.phone) SMS.send(o.phone,'⏱ Hi '+o.guestName+'! Your order is almost ready. ~2 min!');
+    // SMS to GUEST
+    if (o.phone) SMS.send(o.phone,'⏱ Hi '+o.guestName+'! 🍽 Your order at Island Vibes is almost ready — about 2 mins! Get ready!');
     Notify.send('⏱ Order Almost Ready — '+o.id,'Table '+o.tableNo+'\nGuest #'+o.guestNum+' '+o.guestName,'order');
   },
 
   _notifyReady(o) {
     Toast.show('✅ Table '+o.tableNo+': ORDER READY!','success');
-    if (o.phone) SMS.send(o.phone,'✅ Hi '+o.guestName+'! Your order is ready. Bon appétit!');
+    // SMS to GUEST
+    if (o.phone) SMS.send(o.phone,'✅ Hi '+o.guestName+'! Your order is ready and on its way to your table. Bon appétit! 🎉');
     Notify.send('✅ Order Ready — '+o.id,'Table '+o.tableNo+'\nGuest #'+o.guestNum+' '+o.guestName,'order');
   },
 
@@ -1486,6 +1593,7 @@ const MyOrders = {
           <span class="oc-total">J$${o.total.toLocaleString()}</span>
           <button onclick="App.go('tracker');Tracker.lookupByOrderId('${o.id}')" style="background:none;border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif">📡 Track</button>
         </div>
+        ${o.phone?`<div style="margin-top:8px;font-size:11px;color:var(--muted)">📱 SMS updates → ${o.phone}</div>`:''}
         ${ap==='approved'?'<div style="margin-top:10px;padding:8px 12px;background:rgba(34,197,94,.07);border-radius:8px;font-size:12px;color:var(--green)">✅ Approved — your order is being prepared!</div>':''}
         ${ap==='declined'?'<div style="margin-top:10px;padding:8px 12px;background:rgba(239,68,68,.06);border-radius:8px;font-size:12px;color:var(--red)">❌ Declined — please speak to a staff member.</div>':''}
       </div>`;
@@ -1587,8 +1695,8 @@ const Staff = {
     State.orders=[...State.orders];
     Toast.show('✅ '+orderId+' approved!','success');
     Notify.send('✅ Approved: '+orderId,'Guest #'+(o.guestNum||'?')+' '+o.customer+'\nJ$'+o.total.toLocaleString(),'order');
-    if (o.phone) SMS.send(o.phone,'✅ Hi '+o.customer+'! Your order '+orderId+' has been approved and is being prepared. Est. '+o.estMins+' mins.');
-    // Add to live kitchen orders
+    // SMS the GUEST to let them know their order was approved
+    if (o.phone) SMS.send(o.phone,'✅ Hi '+o.customer+'! Great news — your order '+orderId+' has been approved and the kitchen is on it! Est. '+o.estMins+' mins. Track it live on DineFlow.');
     this._addToKitchen(o);
     this.renderApprovals();
   },
@@ -1599,7 +1707,8 @@ const Staff = {
     State.orders=[...State.orders];
     Toast.show('❌ '+orderId+' declined.','warn');
     Notify.send('❌ Declined: '+orderId,'Guest #'+(o.guestNum||'?')+' '+o.customer,'order');
-    if (o.phone) SMS.send(o.phone,'Hi '+o.customer+', your order '+orderId+' was declined. Please speak to a staff member.');
+    // SMS the GUEST about the decline
+    if (o.phone) SMS.send(o.phone,'Hi '+o.customer+', unfortunately your order '+orderId+' was declined. Please speak to a staff member — we\'re happy to help!');
     this.renderApprovals();
   },
 
@@ -1609,6 +1718,10 @@ const Staff = {
     State.orders=[...State.orders];
     Toast.show('✅ '+pending.length+' orders approved!','success');
     Notify.send('✅ Bulk Approve',pending.length+' orders at '+new Date().toLocaleString(),'order');
+    // SMS each guest
+    pending.forEach(o=>{
+      if(o.phone) SMS.send(o.phone,'✅ Hi '+o.customer+'! Your order '+o.id+' is approved and being prepared. ~'+o.estMins+' mins. Track it live on DineFlow!');
+    });
     this.renderApprovals();
   },
 
@@ -1687,7 +1800,17 @@ const Staff = {
     State.liveOrders=[...live];
     Toast.show('Table '+o.tableNo+' → '+stage,'info');
     Notify.send('Stage: '+id,''+prev+' → '+stage+' · '+o.guestName,'order');
-    if (o.phone&&stage==='cooking') SMS.send(o.phone,'🔥 Hi '+o.guestName+'! Your order is now being cooked.');
+    // SMS the GUEST when kitchen stage changes
+    const stageObj=STAGES.find(s=>s.key===stage);
+    if (o.phone && stageObj) {
+      const msgs = {
+        preparing: '👨‍🍳 Hi '+o.guestName+'! Your order is now being prepared. Sit tight!',
+        cooking:   '🔥 Hi '+o.guestName+'! Your food is now cooking. Smells amazing!',
+        plating:   '🍽 Hi '+o.guestName+'! Your food is being plated — almost there!',
+        ready:     '✅ Hi '+o.guestName+'! Your order is ready. Enjoy your meal! 🎉',
+      };
+      if (msgs[stage]) SMS.send(o.phone, msgs[stage]);
+    }
     this.renderKitchen();
   },
 
@@ -1711,7 +1834,8 @@ const Staff = {
     o.stage='ready'; o.remainingSecs=0; State.liveOrders=[...live];
     Toast.show('✅ Guest #'+o.guestNum+' order ready!','success');
     Notify.send('✅ Ready: '+id,'Guest #'+o.guestNum+' '+o.guestName,'order');
-    if (o.phone) SMS.send(o.phone,'✅ Hi '+o.guestName+'! Your order is ready. Enjoy your meal!');
+    // SMS the GUEST that their order is ready
+    if (o.phone) SMS.send(o.phone,'✅ Hi '+o.guestName+'! Your order is ready and heading your way. Bon appétit! 🎉');
     this.renderKitchen();
   },
 
@@ -1756,7 +1880,7 @@ const Staff = {
           <div class="ap-header">
             <div class="ap-num">${o.guestNum||'?'}</div>
             <div class="ap-info"><div class="ap-name">${o.customer}</div>
-            <div class="ap-meta">${o.id} · ${o.restaurantName} · ${age<60?age+'m':Math.round(age/60)+'h'} ago</div></div>
+            <div class="ap-meta">${o.id} · ${o.restaurantName} · ${age<60?age+'m':Math.round(age/60)+'h'} ago${o.phone?' · 📱 '+o.phone:''}</div></div>
             <div class="ap-total">J$${o.total.toLocaleString()}</div>
           </div>
           <div class="ap-items">${o.items.map(i=>'<span class="ap-chip">'+i.qty+'× '+i.name+'</span>').join('')}</div>
@@ -1774,12 +1898,12 @@ const Staff = {
         <h3 style="font-size:17px">💬 SMS Log</h3>
         <span style="font-size:12px;color:var(--muted)">${log.length} messages sent</span>
       </div>
-      <div style="background:var(--surface2);border-radius:var(--r);padding:3px;margin-bottom:4px;font-size:11px;color:var(--muted);padding:12px;border-radius:10px">
-        📱 In production this integrates with Twilio, MessageBird, or Flow (Caribbean SMS). All messages shown below are simulated.
+      <div style="background:var(--surface2);border-radius:var(--r);padding:12px;font-size:11px;color:var(--muted);margin-bottom:12px;border-radius:10px">
+        📱 All SMS messages go directly to the guest's phone number. In production this integrates with Twilio, MessageBird, or Flow (Caribbean SMS). All messages shown below are simulated.
       </div>
       ${log.length===0?'<div style="text-align:center;padding:40px;color:var(--muted)">No SMS sent yet.</div>':''}
       ${log.map(s=>`<div class="sms-bubble">
-        <div class="sms-phone">${s.phone}</div>
+        <div class="sms-phone">To: ${s.phone}</div>
         ${s.message}
         <div class="sms-time">${new Date(s.sentAt).toLocaleTimeString()}</div>
       </div>`).join('')}`;
@@ -1809,14 +1933,17 @@ const Staff = {
 
 /* ═══════════════════════════════════
    LOYALTY
+   — Removed: Free Delivery
+   — Changed: Gold Status → Birthday Celebration (800 pts)
 ═══════════════════════════════════ */
 const REWARDS=[
-  {id:'r1',icon:'🎁',name:'Free Delivery',desc:'Free delivery on your next order.',cost:100},
-  {id:'r2',icon:'🍜',name:'Free Side',desc:'One free side of your choice.',cost:200},
-  {id:'r3',icon:'💳',name:'J$500 Off',desc:'Discount at checkout.',cost:400},
-  {id:'r4',icon:'🌟',name:'VIP Seat',desc:'Priority seating for 2.',cost:600},
-  {id:'r5',icon:'👑',name:'Gold Status',desc:'2× points on all orders.',cost:1000},
+  {id:'r2',icon:'🍜',name:'Free Side',    desc:'One free side of your choice on your next order.',cost:200},
+  {id:'r3',icon:'💳',name:'J$500 Off',    desc:'J$500 discount applied at checkout.',cost:400},
+  {id:'r4',icon:'🌟',name:'VIP Seat',     desc:'Priority seating for 2 at any time.',cost:600},
+  {id:'r5',icon:'🎂',name:'Birthday Celebration',desc:'A complimentary dessert & birthday setup for your table.',cost:800},
+  {id:'r6',icon:'👑',name:'Platinum Perks',desc:'3× points on all orders for 30 days.',cost:1000},
 ];
+
 const Loyalty={
   updatePts(){document.getElementById('nav-pts').textContent='⭐ '+(State.points||0)+' pts';},
   render(){
@@ -1825,9 +1952,9 @@ const Loyalty={
     el.innerHTML=`<div class="loyalty-hero">
       <div class="loy-pts">${pts}</div>
       <div style="flex:1"><h3 style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">DineFlow Points</h3>
-      <p style="font-size:13px;color:var(--muted)">Earn 1pt per J$100 spent. Redeem for rewards.</p>
+      <p style="font-size:13px;color:var(--muted)">Earn 1pt per J$100 spent. Redeem for rewards below.</p>
       <div class="tier-bar" style="margin-top:10px"><div class="tier-fill" style="width:${Math.min(pts/1000*100,100)}%"></div></div>
-      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:3px"><span>0</span><span>Gold: 500</span><span>Platinum: 1000</span></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:3px"><span>0</span><span>Silver: 200</span><span>Gold: 600</span><span>Platinum: 1000</span></div></div>
     </div>
     <h3 style="font-size:18px;margin-bottom:16px">Redeem Rewards</h3>
     <div class="rewards-grid">${REWARDS.map(r=>`<div class="reward-card">
@@ -1835,7 +1962,7 @@ const Loyalty={
       <div class="reward-name">${r.name}</div>
       <div class="reward-desc">${r.desc}</div>
       <div class="reward-cost">⭐ ${r.cost} pts</div>
-      <button class="redeem-btn" ${pts<r.cost?'disabled':''} onclick="Loyalty.redeem('${r.id}')">${pts>=r.cost?'Redeem':'Not enough'}</button>
+      <button class="redeem-btn" ${pts<r.cost?'disabled':''} onclick="Loyalty.redeem('${r.id}')">${pts>=r.cost?'Redeem':'Need '+(r.cost-pts)+' more'}</button>
     </div>`).join('')}</div>`;
   },
   redeem(id){
@@ -1843,6 +1970,9 @@ const Loyalty={
     State.points=(State.points||0)-r.cost;
     this.updatePts(); this.render();
     Toast.show('🎉 "'+r.name+'" redeemed!','success');
+    // SMS the guest their reward confirmation
+    const u=State.currentUser;
+    if(u?.phone) SMS.send(u.phone,'🎉 Hi '+u.name+'! You just redeemed "'+r.name+'" on DineFlow. Show this message to your waiter to claim your reward!');
   }
 };
 
@@ -1878,13 +2008,14 @@ const ResModal={
     State.reservations=[{id,restaurant:rest,customer:u.name,date,time,party:2,status:'confirmed'},...(State.reservations||[])];
     this.close();
     Toast.show('📅 Table booked at '+rest+' for '+date,'success');
+    // SMS the guest their reservation
+    if(u.phone) SMS.send(u.phone,'📅 Hi '+u.name+'! Your table at '+rest+' is confirmed for '+date+' at '+time+'. See you then!');
   }
 };
 
 /* ═══════════════════════════════════
    INIT
 ═══════════════════════════════════ */
-// Restore session if persisted
 (function init() {
   const u = State.currentUser;
   if (u && u.role === 'customer') {
@@ -1899,7 +2030,6 @@ const ResModal={
     document.getElementById('login-overlay').style.display = 'flex';
   }
 
-  // Start tracker ticker if there are active live orders
   if ((State.liveOrders||[]).some(o=>o.stage!=='ready'&&!o.paused)) {
     Tracker._ticker = setInterval(()=>Tracker._tick(), 1000);
   }
