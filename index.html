@@ -701,8 +701,10 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   <div class="page-header">
     <h2>Menu</h2>
     <div class="filter-tabs" id="filter-tabs">
-      <button class="filter-tab active" data-filter="all">All</button>
-      <button class="filter-tab" data-filter="caribbean">Caribbean</button>
+      <button class="filter-tab active" data-filter="all" onclick="Menu.filter('all',this)">All</button>
+      <button class="filter-tab" data-filter="r1"  onclick="Menu.filter('r1',this)">🌴 Island Vibes</button>
+      <button class="filter-tab" data-filter="r2"  onclick="Menu.filter('r2',this)">🌊 Caribbean Blue</button>
+      <button class="filter-tab" data-filter="r3"  onclick="Menu.filter('r3',this)">💧 Waterfalls</button>
     </div>
   </div>
   <div class="rest-grid" id="rest-grid"></div>
@@ -836,40 +838,83 @@ const ADMIN_CREDS = { email: 'greenleniesha@yahoo.com', password: '12345678' };
 const RESTAURANTS = [
   {
     id:'r1', name:'Island Vibes', emoji:'🌴', cuisine:'caribbean',
-    rating:'4.9', time:'15–25', price:'$$', tags:['Protein','Seafood','Sides'],
+    rating:'4.9', time:'15–25', price:'$$', tags:['Proteins','Seafood','Starches'],
     desc:'Fresh proteins and classic Caribbean sides, made to order.',
     menuSections:[
-      { heading:'Protein', type:'select', items:[
-        { id:'m1', name:'Wings', emoji:'🍗', desc:'Crispy fried chicken wings.',
+      { heading:'Proteins', type:'select', items:[
+        { id:'m1', name:'Wings', emoji:'🍗', desc:'Crispy fried chicken wings, seasoned to perfection.',
           variants:[{label:'6 Wings',price:1500},{label:'12 Piece',price:2200}] },
-        { id:'m3', name:'Curry Shrimp', emoji:'🦐', price:2500, desc:'Tender shrimp in rich Jamaican curry.' },
-        { id:'m4', name:'Salmon', emoji:'🐟', price:3000, desc:'Pan-seared salmon fillet with herb butter.' }
+        { id:'m3', name:'Curry Shrimp', emoji:'🦐', price:2500, desc:'Tender shrimp in a rich Jamaican curry sauce.' },
+        { id:'m4', name:'Salmon',       emoji:'🐟', price:3000, desc:'Pan-seared salmon fillet with herb butter.' }
       ]},
-      { heading:'Sides', type:'simple', items:[
-        { id:'m5', name:'Fries',         emoji:'🍟', price:500, desc:'Golden crispy fries.' },
-        { id:'m6', name:'Rice n Peas',   emoji:'🍚', price:500, desc:'Coconut rice with kidney peas.' },
-        { id:'m7', name:'Mash Potatoes', emoji:'🥔', price:500, desc:'Creamy buttered mash.' }
+      { heading:'Starches', type:'simple', items:[
+        { id:'m5', name:'Rice and Peas',       emoji:'🍚', price:500, desc:'Coconut rice cooked with kidney peas.' },
+        { id:'m6', name:'Fried Plantain',      emoji:'🍌', price:500, desc:'Sweet golden fried plantain slices.' },
+        { id:'m7', name:'Festival',            emoji:'🫓', price:500, desc:'Sweet fried dumplings, crispy outside.' },
+        { id:'m8', name:'Roasted Sweet Potato',emoji:'🍠', price:500, desc:'Oven-roasted sweet potato, lightly seasoned.' }
       ]}
     ],
-    get menu() {
-      const out = [];
-      this.menuSections.forEach(sec => {
-        sec.items.forEach(item => {
-          if (item.variants) {
-            item.variants.forEach(v => out.push({
-              id: item.id+'_'+v.label.replace(/\s+/g,'_'),
-              name: item.name+' — '+v.label, emoji: item.emoji, price: v.price, desc: item.desc,
-              baseId: item.id, variantLabel: v.label
-            }));
-          } else {
-            out.push({ id:item.id, name:item.name, emoji:item.emoji, price:item.price, desc:item.desc });
-          }
-        });
-      });
-      return out;
-    }
+    get menu() { return _buildMenu(this.menuSections); }
+  },
+  {
+    id:'r2', name:'Caribbean Blue', emoji:'🌊', cuisine:'caribbean',
+    rating:'4.8', time:'20–30', price:'$$', tags:['Proteins','Grilled','Starches'],
+    desc:'Oceanside flavours — bold proteins and Caribbean starches, cooked fresh.',
+    menuSections:[
+      { heading:'Proteins', type:'simple', items:[
+        { id:'cb1', name:'Jerk Chicken',  emoji:'🍗', price:1800, desc:'Slow-grilled chicken marinated in scotch bonnet jerk seasoning.' },
+        { id:'cb2', name:'Grilled Fish',  emoji:'🐠', price:2000, desc:'Fresh catch of the day, grilled with lime and herbs.' },
+        { id:'cb3', name:'BBQ Pork',      emoji:'🥩', price:2500, desc:'Tender BBQ pork ribs glazed with smoky island sauce.' }
+      ]},
+      { heading:'Starches', type:'simple', items:[
+        { id:'cb4', name:'Rice and Peas',        emoji:'🍚', price:500, desc:'Coconut rice cooked with kidney peas.' },
+        { id:'cb5', name:'Fried Plantain',        emoji:'🍌', price:500, desc:'Sweet golden fried plantain slices.' },
+        { id:'cb6', name:'Festival',              emoji:'🫓', price:500, desc:'Sweet fried dumplings, crispy outside.' },
+        { id:'cb7', name:'Roasted Sweet Potato',  emoji:'🍠', price:500, desc:'Oven-roasted sweet potato, lightly seasoned.' }
+      ]}
+    ],
+    get menu() { return _buildMenu(this.menuSections); }
+  },
+  {
+    id:'r3', name:'Waterfalls', emoji:'💧', cuisine:'caribbean',
+    rating:'4.7', time:'20–35', price:'$$', tags:['Proteins','BBQ','Starches'],
+    desc:'Nature-inspired dining — hearty proteins and home-style Caribbean starches.',
+    menuSections:[
+      { heading:'Proteins', type:'simple', items:[
+        { id:'wf1', name:'Jerk Chicken',  emoji:'🍗', price:1800, desc:'Authentic jerk chicken from the wood-fire grill.' },
+        { id:'wf2', name:'Grilled Fish',  emoji:'🐠', price:2000, desc:'Line-caught fish grilled to perfection with island spices.' },
+        { id:'wf3', name:'BBQ Pork',      emoji:'🥩', price:2500, desc:'Fall-off-the-bone BBQ pork with a sweet smoky glaze.' }
+      ]},
+      { heading:'Starches', type:'simple', items:[
+        { id:'wf4', name:'Rice and Peas',        emoji:'🍚', price:500, desc:'Coconut rice cooked with kidney peas.' },
+        { id:'wf5', name:'Fried Plantain',        emoji:'🍌', price:500, desc:'Sweet golden fried plantain slices.' },
+        { id:'wf6', name:'Festival',              emoji:'🫓', price:500, desc:'Sweet fried dumplings, crispy outside.' },
+        { id:'wf7', name:'Roasted Sweet Potato',  emoji:'🍠', price:500, desc:'Oven-roasted sweet potato, lightly seasoned.' }
+      ]}
+    ],
+    get menu() { return _buildMenu(this.menuSections); }
   }
 ];
+
+/* Shared menu builder used by all restaurants */
+function _buildMenu(menuSections) {
+  const out = [];
+  menuSections.forEach(sec => {
+    sec.items.forEach(item => {
+      if (item.variants) {
+        item.variants.forEach(v => out.push({
+          id: item.id+'_'+v.label.replace(/\s+/g,'_'),
+          name: item.name+' — '+v.label, emoji: item.emoji, price: v.price, desc: item.desc,
+          baseId: item.id, variantLabel: v.label
+        }));
+      } else {
+        out.push({ id:item.id, name:item.name, emoji:item.emoji, price:item.price, desc:item.desc });
+      }
+    });
+  });
+  return out;
+}
+
 
 const STAGES = [
   { key:'received',  label:'Order\nReceived',  icon:'📋', color:'var(--blue)'  },
@@ -1290,8 +1335,22 @@ const App = {
    MENU / RESTAURANTS
 ═══════════════════════════════════ */
 const Menu = {
+  _activeFilter: 'all',
+
   render() {
-    document.getElementById('rest-grid').innerHTML = RESTAURANTS.map(r=>`
+    this._renderGrid(this._activeFilter);
+  },
+
+  filter(filterId, btn) {
+    this._activeFilter = filterId;
+    document.querySelectorAll('.filter-tab').forEach(b=>b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    this._renderGrid(filterId);
+  },
+
+  _renderGrid(filterId) {
+    const list = filterId==='all' ? RESTAURANTS : RESTAURANTS.filter(r=>r.id===filterId);
+    document.getElementById('rest-grid').innerHTML = list.map(r=>`
       <div class="rest-card" onclick="Menu.openDetail('${r.id}')">
         <div class="rest-thumb">${r.emoji}</div>
         <div class="rest-info">
@@ -1468,7 +1527,7 @@ const Cart = {
 
     const newOrder = {
       id: orderId, orderNum,
-      restaurantId: restId, restaurantName: rest?.name||'Island Vibes',
+      restaurantId: restId, restaurantName: rest?.name||'Island Vibes', restaurantEmoji: rest?.emoji||'🌴',
       customer: u.name, customerId: u.id,
       guestNum: u.guestNum, phone: State.currentUser?.phone || u.phone,
       items: State.cart.map(x=>({name:x.name,qty:x.qty,price:x.price})),
@@ -1641,7 +1700,7 @@ const Tracker = {
         <div class="oo-card">
           ${isActive ? `<div class="oo-status-bar ${ap}" style="border-bottom:1px solid var(--border)"><span class="oo-pulse"></span>${statusLabel}${ap==='approved'&&minsLeft!=='—'?' — est. '+minsLeft+' min'+(minsLeft!==1?'s':''):''}  </div>` : `<div class="oo-status-bar declined">❌ ${ap==='declined'?'Order Declined':'Cancelled'}</div>`}
           <div class="oo-card-top">
-            <div class="oo-emoji">🌴</div>
+            <div class="oo-emoji">${o.restaurantEmoji||'🌴'}</div>
             <div class="oo-info">
               <div class="oo-rest">${o.restaurantName}</div>
               <div class="oo-meta">${o.id} · ${age<60?age+'m ago':Math.round(age/60)+'h ago'} · Guest #${o.guestNum||'?'}</div>
@@ -1688,7 +1747,7 @@ const Tracker = {
               <span class="oo-pulse"></span>In Kitchen — ${Math.ceil(l.remainingSecs/60)} mins left
             </div>
             <div class="oo-card-top">
-              <div class="oo-emoji">🌴</div>
+              <div class="oo-emoji">${o.restaurantEmoji||'🌴'}</div>
               <div class="oo-info">
                 <div class="oo-rest">${l.restaurant}</div>
                 <div class="oo-meta">${l.id} · Guest #${l.guestNum}</div>
@@ -1999,7 +2058,7 @@ const MyOrders = {
           ${kitStatus}${ap==='approved'&&minsLeft&&minsLeft!==15?' — est. '+minsLeft+' min'+(minsLeft!==1?'s':''):''}
         </div>
         <div class="oo-card-top">
-          <div class="oo-emoji">🌴</div>
+          <div class="oo-emoji">${o.restaurantEmoji||'🌴'}</div>
           <div class="oo-info">
             <div class="oo-rest">${o.restaurantName}</div>
             <div class="oo-meta">${o.id} · ${age<60?age+'m ago':Math.round(age/60)+'h ago'} · Guest #${o.guestNum||'?'}</div>
