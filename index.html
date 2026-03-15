@@ -190,14 +190,22 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 .waiter-code{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--gold);letter-spacing:6px}
 .phone-confirm-hint{font-size:12px;color:var(--muted);margin-top:6px}
 
-/* LIVE TRACKER */
-.tracker-wrap{max-width:560px;margin:0 auto}
-.tracker-lookup{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:36px;text-align:center}
-.tracker-lookup h2{font-size:24px;margin-bottom:8px}
-.tracker-lookup p{color:var(--muted);font-size:14px;margin-bottom:24px}
-.lookup-row{display:flex;gap:8px}
-.live-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:var(--green);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;margin-bottom:16px}
-.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.4s infinite}
+const trackBtn = document.getElementById("trackBtn");
+
+trackBtn.addEventListener("click", function () {
+
+  const orderId = document.getElementById("orderId").value;
+
+  if(orderId === ""){
+    alert("Please enter your order ID");
+    return;
+  }
+
+  console.log("Tracking order:", orderId);
+
+  // example tracker action
+  // later you can connect this to your database or API
+});
 
 /* PROGRESS STAGES */
 .stage-pipeline{display:flex;gap:0;margin:20px 0}
