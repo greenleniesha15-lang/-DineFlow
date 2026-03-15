@@ -94,7 +94,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 
 /* HOME HERO */
 .hero{min-height:460px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;padding:40px 0 48px}
-.hero-badge{display:inline-block;background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.3);color:var(--accent);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500;margin-bottom:18px}
+
 .hero h1{font-size:clamp(32px,5vw,60px);line-height:1.08;margin-bottom:16px}
 .hero h1 span{color:var(--accent)}
 .hero p{color:var(--muted);font-size:15px;line-height:1.7;max-width:420px;margin-bottom:28px}
@@ -618,6 +618,146 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 .feature-card:hover .feat-icon {
   transform: scale(1.15) rotate(-3deg);
 }
+
+
+/* ═══════ GOOEY MORPHING HERO TEXT ═══════ */
+.gooey-hero-wrap {
+  display: block;
+  position: relative;
+  height: 1.12em;
+}
+.gooey-filter-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  filter: url(#gooey-threshold);
+}
+.gooey-span {
+  position: absolute;
+  left: 0;
+  white-space: nowrap;
+  color: #ffaa55;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: inherit;
+  line-height: 1.08;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* ═══════════ METAL NAV BUTTONS (port of MetalButton component) ═══════════ */
+
+/* Remove default nav-link appearance for metal buttons */
+.nav-metal {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  color: inherit !important;
+}
+.nav-metal:hover { background: none !important; transform: none !important; }
+.nav-metal.active { background: none !important; }
+
+/* Outer wrapper — gradient border ring */
+.mb-wrap {
+  display: inline-flex;
+  position: relative;
+  border-radius: 7px;
+  padding: 1.25px;
+  transform: translateY(0) scale(1);
+  transition: transform 250ms cubic-bezier(0.1,0.4,0.2,1),
+              box-shadow 250ms cubic-bezier(0.1,0.4,0.2,1);
+  will-change: transform;
+  box-shadow: 0 3px 8px rgba(0,0,0,.18);
+  cursor: pointer;
+}
+.mb-wrap:hover {
+  box-shadow: 0 4px 14px rgba(0,0,0,.28);
+}
+.mb-wrap:active {
+  transform: translateY(2.5px) scale(0.99) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,.15) !important;
+}
+
+/* Color variants — outer */
+.mb-default { background: linear-gradient(to bottom, #000, #a0a0a0); }
+.mb-active  { background: linear-gradient(to bottom, #b05000, #f97316); }
+
+/* Inner highlight layer */
+.mb-inner {
+  position: absolute;
+  inset: 1px;
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 0;
+  transition: filter 250ms;
+}
+.mb-default .mb-inner { background: linear-gradient(to bottom, #fafafa, #3e3e3e, #e5e5e5); }
+.mb-active  .mb-inner { background: linear-gradient(to bottom, #fed7aa, #c2410c, #fed7aa); }
+
+/* The visible button face */
+.mb-btn {
+  position: relative;
+  z-index: 10;
+  margin: 1px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 13px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transform: scale(1);
+  transition: transform 250ms cubic-bezier(0.1,0.4,0.2,1), filter 250ms;
+  text-shadow: 0 -1px 0 rgba(80,80,80,0.9);
+  overflow: hidden;
+  user-select: none;
+  text-decoration: none;
+}
+.mb-wrap:active .mb-btn { transform: scale(0.97); }
+
+.mb-default .mb-btn {
+  background: linear-gradient(to bottom, #b9b9b9, #969696);
+  color: #fff;
+}
+.mb-active .mb-btn {
+  background: linear-gradient(to bottom, #fb923c, #ea6a10);
+  color: #fff;
+  text-shadow: 0 -1px 0 rgba(180,60,0,0.8);
+}
+
+/* Shine overlay on press */
+.mb-shine {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.45), transparent);
+  opacity: 0;
+  border-radius: inherit;
+  transition: opacity 0.2s;
+}
+.mb-wrap:active .mb-shine { opacity: 0.2; }
+
+/* Hover top-gloss */
+.mb-hover-gloss {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(to top, transparent, rgba(255,255,255,0.06));
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.mb-wrap:hover .mb-hover-gloss { opacity: 1; }
 </style>
 </head>
 <body>
@@ -691,13 +831,46 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
       <button class="nav-btn" id="nav-fwd" onclick="Nav.fwd()" disabled title="Forward">›</button>
     </div>
     <div class="nav-links" id="nav-links">
-      <button class="nav-link active" data-view="home">Home</button>
-      <button class="nav-link" data-view="restaurants">🍽 Our Restaurants</button>
-      <button class="nav-link" data-view="tracker" id="tracker-link" style="display:none">📡 Track Order</button>
-      <button class="nav-link" data-view="myorders" id="myorders-link" style="display:none">🧾 My Orders<span id="mo-badge" class="badge" style="display:none">!</span></button>
-      <button class="nav-link" data-view="reservations" id="reservations-link" style="display:none">📅 Reservations</button>
+
+      <!-- Home — MetalButton -->
+      <div class="mb-wrap mb-default nav-link active" id="mb-home" data-view="home" onclick="App.go('home')" tabindex="0" role="button" aria-label="Home">
+        <div class="mb-inner"></div>
+        <span class="mb-btn">🏠 Home<span class="mb-shine"></span><span class="mb-hover-gloss"></span></span>
+      </div>
+
+      <!-- Our Restaurants — MetalButton -->
+      <div class="mb-wrap mb-default nav-link" id="mb-restaurants" data-view="restaurants" onclick="App.go('restaurants')" tabindex="0" role="button" aria-label="Restaurants">
+        <div class="mb-inner"></div>
+        <span class="mb-btn">🍽 Our Restaurants<span class="mb-shine"></span><span class="mb-hover-gloss"></span></span>
+      </div>
+
+      <!-- Track Order — MetalButton (customer only) -->
+      <div class="mb-wrap mb-default nav-link" id="tracker-link" data-view="tracker" onclick="App.go('tracker')" tabindex="0" role="button" aria-label="Track Order" style="display:none">
+        <div class="mb-inner"></div>
+        <span class="mb-btn">📡 Track Order<span class="mb-shine"></span><span class="mb-hover-gloss"></span></span>
+      </div>
+
+      <!-- My Orders — MetalButton (customer only) -->
+      <div class="mb-wrap mb-default nav-link" id="myorders-link" data-view="myorders" onclick="App.go('myorders')" tabindex="0" role="button" aria-label="My Orders" style="display:none">
+        <div class="mb-inner"></div>
+        <span class="mb-btn">🧾 My Orders<span id="mo-badge" class="badge" style="display:none">!</span><span class="mb-shine"></span><span class="mb-hover-gloss"></span></span>
+      </div>
+
+      <!-- Reservations — MetalButton (customer only) -->
+      <div class="mb-wrap mb-default nav-link" id="reservations-link" data-view="reservations" onclick="App.go('reservations')" tabindex="0" role="button" aria-label="Reservations" style="display:none">
+        <div class="mb-inner"></div>
+        <span class="mb-btn">📅 Reservations<span class="mb-shine"></span><span class="mb-hover-gloss"></span></span>
+      </div>
+
+      <!-- History — plain (hidden) -->
       <button class="nav-link" data-view="orders" style="display:none">History</button>
-      <button class="nav-link" data-view="loyalty">Rewards</button>
+
+      <!-- Rewards — MetalButton -->
+      <div class="mb-wrap mb-default nav-link" id="mb-loyalty" data-view="loyalty" onclick="App.go('loyalty')" tabindex="0" role="button" aria-label="Rewards">
+        <div class="mb-inner"></div>
+        <span class="mb-btn">🎯 Rewards<span class="mb-shine"></span><span class="mb-hover-gloss"></span></span>
+      </div>
+
     </div>
     <div class="nav-user">
       <div id="guest-num-pill" style="display:none" class="guest-pill"></div>
@@ -734,8 +907,22 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 <div class="view active" id="view-home">
   <section class="hero">
     <div>
-      <div class="hero-badge">🍽 Powered by DineFlow</div>
-      <h1>Reserve. Order.<br><span>Track. Earn.</span></h1>
+      <h1 style="line-height:1.08;margin-bottom:16px;font-size:clamp(32px,5vw,60px)">
+        <svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+          <defs>
+            <filter id="gooey-threshold">
+              <feColorMatrix in="SourceGraphic" type="matrix"
+                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 255 -140"/>
+            </filter>
+          </defs>
+        </svg>
+        <span class="gooey-hero-wrap" aria-label="Reserve. Order. Track. Earn.">
+          <span class="gooey-filter-layer">
+            <span class="gooey-span" id="gt1"></span>
+            <span class="gooey-span" id="gt2"></span>
+          </span>
+        </span>
+      </h1>
       <p>Place your order, get a unique number, and watch every stage of your meal — from kitchen to table — in real time.</p>
       <div class="hero-actions">
         <button class="btn-primary" style="width:auto" onclick="App.go('restaurants')">🍽 Our Restaurants</button>
@@ -3374,6 +3561,108 @@ const StaffChat = {
     document.querySelectorAll('.feature-card').forEach(card => {
       card.style.setProperty('--glow-active', '0');
     });
+  });
+})();
+
+
+/* ── GooeyText: faithful port of the React component ── */
+(function() {
+  const TEXTS        = ['Reserve.', 'Order.', 'Track.', 'Earn.'];
+  const MORPH_TIME   = 1;      // seconds  (morphTime prop default)
+  const COOLDOWN_TIME = 0.25;  // seconds  (cooldownTime prop default)
+
+  const el1 = document.getElementById('gt1');
+  const el2 = document.getElementById('gt2');
+  if (!el1 || !el2) return;
+
+  // Mirrors the useEffect logic exactly
+  let textIndex = TEXTS.length - 1;
+  let time      = new Date();
+  let morph     = 0;
+  let cooldown  = COOLDOWN_TIME;
+
+  // Seed starting text
+  el1.textContent = TEXTS[textIndex % TEXTS.length];
+  el2.textContent = TEXTS[(textIndex + 1) % TEXTS.length];
+
+  function setMorph(fraction) {
+    // text2 (incoming)
+    el2.style.filter  = 'blur(' + Math.min(8 / fraction - 8, 100) + 'px)';
+    el2.style.opacity = (Math.pow(fraction, 0.4) * 100) + '%';
+    // text1 (outgoing)
+    fraction = 1 - fraction;
+    el1.style.filter  = 'blur(' + Math.min(8 / fraction - 8, 100) + 'px)';
+    el1.style.opacity = (Math.pow(fraction, 0.4) * 100) + '%';
+  }
+
+  function doCooldown() {
+    morph = 0;
+    el2.style.filter  = '';
+    el2.style.opacity = '100%';
+    el1.style.filter  = '';
+    el1.style.opacity = '0%';
+  }
+
+  function doMorph() {
+    morph   -= cooldown;
+    cooldown = 0;
+    var fraction = morph / MORPH_TIME;
+    if (fraction > 1) {
+      cooldown = COOLDOWN_TIME;
+      fraction = 1;
+    }
+    setMorph(fraction);
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+    var newTime = new Date();
+    var shouldIncrementIndex = cooldown > 0;
+    var dt = (newTime.getTime() - time.getTime()) / 1000;
+    time = newTime;
+    cooldown -= dt;
+    if (cooldown <= 0) {
+      if (shouldIncrementIndex) {
+        textIndex = (textIndex + 1) % TEXTS.length;
+        el1.textContent = TEXTS[textIndex % TEXTS.length];
+        el2.textContent = TEXTS[(textIndex + 1) % TEXTS.length];
+      }
+      doMorph();
+    } else {
+      doCooldown();
+    }
+  }
+
+  animate();
+})();
+
+
+/* ── MetalButton nav active state management ── */
+(function() {
+  // Override active styling: when a nav-link gets .active, switch outer to mb-active color
+  const origGo = App._go.bind(App);
+  App._go = function(view) {
+    origGo(view);
+    // Update metal button active colors
+    document.querySelectorAll('.mb-wrap.nav-link').forEach(el => {
+      const isActive = el.dataset.view === view;
+      el.classList.toggle('mb-active', isActive);
+      el.classList.toggle('mb-default', !isActive);
+    });
+  };
+
+  // Keyboard support for metal buttons
+  document.querySelectorAll('.mb-wrap[tabindex]').forEach(el => {
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        el.click();
+      }
+    });
+    // Press/release visual feedback
+    el.addEventListener('mousedown',  () => el.style.transform = 'translateY(2.5px) scale(0.99)');
+    el.addEventListener('mouseup',    () => el.style.transform = '');
+    el.addEventListener('mouseleave', () => el.style.transform = '');
   });
 })();
 
