@@ -922,6 +922,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 }
 .nav-inner { position: relative; z-index: 1; }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 </head>
 <body>
 
@@ -1310,9 +1311,8 @@ const RESTAURANTS = [
     rating:'4.9', time:'15–25', price:'$$', tags:['Proteins','Seafood','Starches'],
     desc:'Fresh proteins and classic Caribbean sides, made to order.',
     menuSections:[
-      { heading:'Proteins', type:'select', items:[
-        { id:'m1', name:'Wings', emoji:'🍗', desc:'Crispy fried chicken wings, seasoned to perfection.',
-          variants:[{label:'6 Wings',price:1500},{label:'12 Piece',price:2200}] },
+      { heading:'Proteins', type:'simple', items:[
+        { id:'m1', name:'Wings (12 Piece)', emoji:'🍗', price:2200, desc:'12 crispy fried chicken wings, seasoned to perfection.' },
         { id:'m3', name:'Curry Shrimp', emoji:'🦐', price:2500, desc:'Tender shrimp in a rich Jamaican curry sauce.' },
         { id:'m4', name:'Salmon',       emoji:'🐟', price:3000, desc:'Pan-seared salmon fillet with herb butter.' }
       ]},
@@ -2042,6 +2042,19 @@ const Cart = {
 
     App.go('confirm');
     Confirmation.show(newOrder);
+    // 🎉 Confetti celebration — ConfettiSideCannons style from the component
+    (function fireOrderConfetti() {
+      if (typeof confetti === 'undefined') return;
+      const end = Date.now() + 2500;
+      const colors = ['#f97316','#a855f7','#22c55e','#3b82f6','#f59e0b'];
+      function frame() {
+        if (Date.now() > end) return;
+        confetti({ particleCount:2, angle:60,  spread:55, startVelocity:60, origin:{x:0,   y:0.6}, colors });
+        confetti({ particleCount:2, angle:120, spread:55, startVelocity:60, origin:{x:1,   y:0.6}, colors });
+        requestAnimationFrame(frame);
+      }
+      frame();
+    })();
   }
 };
 
