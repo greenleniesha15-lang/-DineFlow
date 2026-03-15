@@ -1110,7 +1110,9 @@ const Auth = {
     errEl.style.display = 'none';
 
     // Persist guest counter in State
-    State.guestCounter = (State.guestCounter || 0) + 1;
+    // Guest numbers 1–10, then reset to 1
+    const rawCount = (State.guestCounter || 0) + 1;
+    State.guestCounter = rawCount > 10 ? 1 : rawCount;
     const guestNum = State.guestCounter;
     const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2) || name[0].toUpperCase();
 
@@ -1529,12 +1531,21 @@ const Confirmation = {
         <h2 style="font-size:18px;margin-bottom:6px">Order Placed!</h2>
         <div class="confirm-order-num">${order.id}</div>
         <div class="confirm-guest">👤 ${order.customer} &nbsp;·&nbsp; <span style="color:var(--accent);font-weight:700">Guest #${order.guestNum}</span></div>
-        <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Your order number matches your guest number — show this to your waiter.</p>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Your order has been sent to the restaurant. Please wait for staff to process it.</p>
+
+        <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:var(--r);padding:16px;margin-bottom:16px">
+          <div style="font-size:15px;font-weight:600;color:var(--gold);margin-bottom:8px">📋 What happens next?</div>
+          <div style="font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:7px">
+            <span>① Staff will review and send your order to the kitchen</span>
+            <span>② You'll receive a notification in your chat when it's confirmed</span>
+            <span>③ Track the live progress from the Track Order page</span>
+            <span>④ Staff will notify you when your food is ready</span>
+          </div>
+        </div>
 
         <div class="waiter-confirm-box">
-          <p>🤝 <strong>Both you and your waiter must confirm</strong> this order number to proceed.</p>
+          <p>🎫 Your confirmation code — show this to your waiter if needed:</p>
           <div class="waiter-code">${order.confirmCode}</div>
-          <div class="phone-confirm-hint">Show this code to your waiter for dual confirmation</div>
         </div>
 
         <div style="background:var(--surface2);border-radius:var(--r);padding:14px;margin:16px 0;font-size:13px;color:var(--muted)">
@@ -1745,67 +1756,70 @@ const Tracker = {
 
   _renderLiveCard(el, o, name, gn, items, restaurant, oid) {
     const stIdx = STAGES.findIndex(s=>s.key===o.stage);
-    const pct = o.totalSecs>0 ? Math.min(100, Math.round((1-o.remainingSecs/o.totalSecs)*100)) : 100;
-    const minsLeft = Math.ceil(o.remainingSecs/60);
     const isReady = o.stage==='ready';
-    const R=68, C=2*Math.PI*R, offset=C-(pct/100)*C;
-    const urg = pct>=85||o.delayFlag ? '#ef4444' : pct>=60 ? '#f59e0b' : '#22c55e';
+    const isPaused = o.paused;
 
     const stageHtml = STAGES.map((s,i)=>`
-      <div class="stage-node ${i<stIdx?'done':i===stIdx?'active':''}">
-        <div class="stage-dot">${i<stIdx?'✓':s.icon}</div>
-        <div class="stage-label">${s.label.replace('\n','<br>')}</div>
+      <div class="ot-step ${i<stIdx?'done':i===stIdx?'active':''}">
+        <div class="ot-dot">${i<stIdx?'✓':s.icon}</div>
+        <div class="ot-step-info">
+          <div class="ot-step-name">${s.label.replace('\n',' ')}</div>
+          ${i===stIdx?'<div class="ot-step-desc" id="live-stage-note">'+( o.staffNote||'' )+'</div>':''}
+        </div>
       </div>`).join('');
 
+    const alertHtml = o.delayFlag && !isReady
+      ? '<div class="alert-banner alert-delay">⚠️ Your order is taking a little longer. The kitchen is on it!</div>'
+      : o.stage==='plating'
+        ? '<div class="alert-banner alert-almost">🍽 Almost ready — your food is being finished!</div>'
+        : '';
+
     el.innerHTML = `
-      <div style="max-width:560px;margin:0 auto">
+      <div class="ot-page">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:8px">
           <div>
-            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Live Order · ${restaurant}</div>
-            <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800">${name} <span style="color:var(--accent)">· Guest #${gn}</span></div>
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">${restaurant}</div>
+            <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800">${name} <span style="color:var(--accent)">· Guest #${gn}</span></div>
+            <div style="font-size:12px;color:var(--muted);margin-top:3px">${oid}</div>
           </div>
-          <div style="display:flex;align-items:center;gap:6px">
-            <span class="live-badge"><span class="live-dot"></span>LIVE</span>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            ${!isReady&&!isPaused?'<span class="live-badge"><span class="live-dot"></span>LIVE</span>':''}
+            ${isPaused?'<span style="color:var(--muted);font-size:12px">⏸ Paused</span>':''}
             <button class="btn-ghost" style="padding:6px 12px;font-size:12px" onclick="Tracker._activeOrderId=null;Tracker.render()">← Back</button>
           </div>
         </div>
 
-        ${o.delayFlag&&!isReady?'<div class="alert-banner alert-delay">⚠️ Your order is taking a bit longer. Kitchen is on it!</div>':''}
-        ${!o.delayFlag&&o.stage==='plating'?'<div class="alert-banner alert-almost">🍽 Almost ready — your food is being plated!</div>':''}
-        ${isReady?'<div class="alert-banner alert-ready">✅ Your order is ready! Your waiter is bringing it to you.</div>':''}
+        ${alertHtml}
 
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:16px">
-          <div class="ring-wrap">
-            <div class="ring-outer">
-              <svg class="ring-svg" width="160" height="160" viewBox="0 0 160 160">
-                <circle class="ring-track" cx="80" cy="80" r="${R}"/>
-                <circle class="ring-progress" cx="80" cy="80" r="${R}"
-                  stroke="${isReady?'#22c55e':urg}"
-                  stroke-dasharray="${C}"
-                  stroke-dashoffset="${isReady?0:offset}"/>
-              </svg>
-              <div class="ring-center">
-                ${isReady
-                  ? '<div style="font-size:28px">✅</div>'
-                  : `<div class="ring-mins" style="color:${urg}">${minsLeft<=0?'Now!':minsLeft}</div><div class="ring-label">${minsLeft<=0?'Ready':'min left'}</div>`}
-              </div>
-            </div>
-            <div style="font-size:13px;color:var(--muted);margin-top:8px">
-              ${isReady?'Enjoy your meal!':o.paused?'⏸ Paused by kitchen':minsLeft<=0?'Ready any moment':('~'+minsLeft+' min'+(minsLeft!==1?'s':'')+' remaining')}
-            </div>
-          </div>
-          <div class="progress-bar-wrap">
-            <div class="progress-bar-fill" style="width:${pct}%;background:${urg}"></div>
-          </div>
-          <div class="stage-pipeline">${stageHtml}</div>
+        ${isReady ? '<div class="alert-banner alert-ready" style="font-size:15px;font-weight:600">🎉 Your order is ready! Your server will bring it to you.</div>' : ''}
+
+        <!-- Stage Journey -->
+        <div class="ot-progress-card">
+          <div class="ot-items-title">Order Progress</div>
+          <div class="ot-timeline">${stageHtml}</div>
         </div>
 
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
-          <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">Your order</div>
-          ${items.map(i=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--border)"><span>${i.qty}× ${i.name}</span></div>`).join('')}
+        <!-- Staff note (if any) -->
+        ${o.staffNote ? `
+        <div style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:var(--r);padding:14px 16px;margin-bottom:16px">
+          <div style="font-size:11px;color:var(--blue);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">💬 Message from Staff</div>
+          <div style="font-size:14px">${o.staffNote}</div>
+        </div>` : ''}
+
+        <!-- Items -->
+        <div class="ot-items-card">
+          <div class="ot-items-title">Your Order</div>
+          ${items.map(i=>`<div class="ot-item-row">
+            <div class="ot-item-qty">${i.qty}</div>
+            <div class="ot-item-name">${i.name}</div>
+          </div>`).join('')}
         </div>
+
+        <!-- Message staff -->
+        <button class="btn-primary" style="width:100%" onclick="ChatWidget.open()">💬 Message Staff</button>
       </div>`;
   },
+
 
   _renderOrderCard(el, order, name, gn, items, restaurant, oid) {
     const ap = order.approval||'pending';
@@ -1870,9 +1884,8 @@ const Tracker = {
         </div>` : ''}
 
         <!-- Status alert -->
-        ${ap==='pending' ? `<div class="alert-banner alert-info" style="margin-bottom:16px">⏳ Your order is waiting for staff approval. You'll be notified shortly.</div>` : ''}
-        ${ap==='declined' ? `<div class="alert-banner alert-delay">❌ Your order was declined. Please speak to a staff member or place a new order.</div>` : ''}
-        ${ap==='approved'&&stage==='ready' ? `<div class="alert-banner alert-ready">🎉 Your order is ready! Your server will bring it to you shortly.</div>` : ''}
+        ${stage==='ready' ? `<div class="alert-banner alert-ready">🎉 Your order is ready! Your server will bring it to you shortly.</div>` : ''}
+        ${ap==='pending' ? `<div class="alert-banner alert-info" style="margin-bottom:16px">📋 Your order has been received. The kitchen will start preparing it shortly.</div>` : ''}
 
         <!-- Timeline -->
         ${ap==='approved' ? `<div class="ot-progress-card"><div class="ot-items-title">Order Journey</div><div class="ot-timeline">${stepsHtml}</div></div>` : ''}
@@ -1979,11 +1992,11 @@ const MyOrders = {
       const pct=live?Math.min(100,Math.round((1-live.remainingSecs/live.totalSecs)*100)):ap==='approved'?30:5;
       const minsLeft=live?Math.ceil(live.remainingSecs/60):o.estMins;
       const barClass=pct>=85?'urgent':pct>=50?'warn':'ok';
-      const statusLabel=ap==='pending'?'⏳ Awaiting approval':ap==='approved'&&stage==='ready'?'✅ Ready!':ap==='approved'?'🔥 In Kitchen':ap==='declined'?'❌ Declined':'Confirmed';
+      const kitStatus=stage==='ready'?'✅ Ready for you!':ap==='pending'?'📋 Order received — preparing soon':'🔥 Being prepared in kitchen'
       return `<div class="oo-card">
-        <div class="oo-status-bar ${ap}">
-          ${ap!=='declined'?'<span class="oo-pulse" style="display:'+(ap==='pending'||ap==='approved'?'block':'none')+'"></span>':''}
-          ${statusLabel}${ap==='approved'&&minsLeft&&minsLeft!==15?' — est. '+minsLeft+' min'+(minsLeft!==1?'s':''):''}
+        <div class="oo-status-bar ${ap==='declined'?'declined':stage==='ready'?'ready':'approved'}">
+          ${stage!=='ready'?'<span class="oo-pulse"></span>':''}
+          ${kitStatus}${ap==='approved'&&minsLeft&&minsLeft!==15?' — est. '+minsLeft+' min'+(minsLeft!==1?'s':''):''}
         </div>
         <div class="oo-card-top">
           <div class="oo-emoji">🌴</div>
@@ -2232,6 +2245,22 @@ const Staff = {
             ${STAGES.slice(stIdx+1).slice(0,2).map(s=>`<button class="k-btn" onclick="Staff.setStage('${o.id}','${s.key}')">${s.icon} ${s.label.replace('\n',' ')}</button>`).join('')}
             <button class="k-btn success" onclick="Staff.markReady('${o.id}')">✅ Ready</button>
           </div>
+          <!-- Notify Guest section -->
+          <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">📣 Notify Guest #${o.guestNum}</div>
+            <div style="display:flex;gap:6px;margin-bottom:6px">
+              <button class="k-btn" onclick="Staff.notifyGuest('${o.id}','Your order is being prepared!')" style="flex:none;font-size:11px">🍳 Preparing</button>
+              <button class="k-btn" onclick="Staff.notifyGuest('${o.id}','Your food is almost ready!')" style="flex:none;font-size:11px">⏱ Almost ready</button>
+              <button class="k-btn success" onclick="Staff.notifyGuest('${o.id}','Your order is ready! Your server will bring it to you.')" style="flex:none;font-size:11px">✅ Ready now</button>
+            </div>
+            <div style="display:flex;gap:6px">
+              <input type="text" id="note-${o.id}" placeholder="Custom message to guest…" maxlength="120"
+                style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none"
+                onkeydown="if(event.key==='Enter')Staff.notifyGuestCustom('${o.id}')"
+                onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+              <button class="k-btn primary" onclick="Staff.notifyGuestCustom('${o.id}')" style="flex:none;font-size:12px">Send</button>
+            </div>
+          </div>
         </div></div>`;
     };
 
@@ -2280,7 +2309,35 @@ const Staff = {
     Toast.show('✅ Guest #'+o.guestNum+' order ready!','success');
     Notify.send('✅ Ready: '+id,'Guest #'+o.guestNum+' '+o.guestName,'order');
     if (o.phone) SMS.send(o.phone,'✅ Hi '+o.guestName+'! Your order is ready. Enjoy your meal!');
+    this.notifyGuest(id,'✅ Your order is ready! Your server will bring it to you now. Enjoy!');
     this.renderKitchen();
+  },
+
+  /* Send a notification message to the guest's chat + update their tracker note */
+  notifyGuest(id, message) {
+    const live=State.liveOrders||[]; const o=live.find(x=>x.id===id); if(!o) return;
+    // Attach note to live order so tracker shows it
+    o.staffNote = message;
+    State.liveOrders=[...live];
+    // Push as a chat message to the guest
+    const msg = {
+      id:'MSG-'+Date.now(), guestNum:o.guestNum, guestName:o.guestName,
+      customerId:null, orderId:o.orderId||id, from:'staff',
+      text:message, ts:new Date().toISOString(), read:true, readByCustomer:false
+    };
+    State.messages=[msg,...(State.messages||[])];
+    Toast.show('📣 Guest #'+o.guestNum+' notified','success');
+    if (o.phone) SMS.send(o.phone,'🍽 Hi '+o.guestName+'! '+message);
+    ChatWidget.onNewStaffMessage(o.guestNum);
+  },
+
+  notifyGuestCustom(id) {
+    const input=document.getElementById('note-'+id);
+    if(!input) return;
+    const text=input.value.trim();
+    if(!text){Toast.show('Type a message first','warn');return;}
+    this.notifyGuest(id, text);
+    input.value='';
   },
 
   removeOrder(id) {
