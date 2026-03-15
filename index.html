@@ -1975,6 +1975,52 @@ const Staff = {
         <pre>${n.body}</pre>
       </div>`).join('')}`;
   }
+,
+
+  quickApprove(orderId) {
+    this.approve(orderId);
+    this.showTab('kitchen', null);
+  },
+
+  quickDecline(orderId) {
+    this.decline(orderId);
+    this.showTab('kitchen', null);
+  },
+
+  renderCode() {
+    const el = document.getElementById('staff-code');
+    if (!el) return;
+    const src = document.documentElement.outerHTML;
+    const escaped = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+        <div>
+          <h3 style="font-size:17px">🧑‍💻 Code Preview</h3>
+          <p style="color:var(--muted);font-size:12px;margin-top:3px">Full source — read-only snapshot · ${src.length.toLocaleString()} chars</p>
+        </div>
+        <button onclick="Staff._copyCode()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">📋 Copy All</button>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);overflow:auto;max-height:70vh">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface2);z-index:10">
+          <span style="font-size:11px;color:var(--muted);font-family:monospace">dineflow.html</span>
+          <div style="display:flex;gap:5px">
+            <span style="width:10px;height:10px;border-radius:50%;background:var(--red);display:inline-block"></span>
+            <span style="width:10px;height:10px;border-radius:50%;background:var(--gold);display:inline-block"></span>
+            <span style="width:10px;height:10px;border-radius:50%;background:var(--green);display:inline-block"></span>
+          </div>
+        </div>
+        <pre style="padding:16px;font-size:11px;line-height:1.7;font-family:'Courier New',monospace;color:#a8b3cf;white-space:pre;overflow-x:auto;margin:0">${escaped}</pre>
+      </div>`;
+  },
+
+  _copyCode() {
+    const src = document.documentElement.outerHTML;
+    navigator.clipboard.writeText(src).then(()=>{
+      Toast.show('📋 Full source copied!','success');
+    }).catch(()=>{
+      Toast.show('⚠️ Copy failed — try selecting manually','warn');
+    });
+  }
 };
 
 /* ═══════════════════════════════════
@@ -2089,51 +2135,6 @@ const ResModal={
   Nav._update();
 })();
 
-// ── Quick approve/decline from Kitchen tab ──
-Staff.quickApprove = function(orderId) {
-  Staff.approve(orderId);
-  Staff.showTab('kitchen', null);
-};
-Staff.quickDecline = function(orderId) {
-  Staff.decline(orderId);
-  Staff.showTab('kitchen', null);
-};
-
-// ── Code Preview renderer ──
-Staff.renderCode = function() {
-  const el = document.getElementById('staff-code');
-  if (!el) return;
-  const src = document.documentElement.outerHTML;
-  const escaped = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  el.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
-      <div>
-        <h3 style="font-size:17px">🧑‍💻 Code Preview</h3>
-        <p style="color:var(--muted);font-size:12px;margin-top:3px">Full source of this DineFlow build — read-only snapshot</p>
-      </div>
-      <button onclick="Staff._copyCode()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">📋 Copy All</button>
-    </div>
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);overflow:auto;max-height:70vh">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface2);z-index:10">
-        <span style="font-size:11px;color:var(--muted);font-family:monospace">dineflow.html &nbsp;·&nbsp; ${src.length.toLocaleString()} chars</span>
-        <div style="display:flex;gap:5px">
-          <span style="width:10px;height:10px;border-radius:50%;background:var(--red);display:inline-block"></span>
-          <span style="width:10px;height:10px;border-radius:50%;background:var(--gold);display:inline-block"></span>
-          <span style="width:10px;height:10px;border-radius:50%;background:var(--green);display:inline-block"></span>
-        </div>
-      </div>
-      <pre style="padding:16px;font-size:11px;line-height:1.7;font-family:'Courier New',monospace;color:#a8b3cf;white-space:pre;tab-size:2;overflow-x:auto;margin:0">${escaped}</pre>
-    </div>`;
-};
-
-Staff._copyCode = function() {
-  const src = document.documentElement.outerHTML;
-  navigator.clipboard.writeText(src).then(()=>{
-    Toast.show('📋 Full source copied to clipboard!','success');
-  }).catch(()=>{
-    Toast.show('⚠️ Copy failed — try selecting manually','warn');
-  });
-};
 </script>
 </body>
 </html>
