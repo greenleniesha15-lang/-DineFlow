@@ -1052,6 +1052,108 @@
     #nav-back:not(:disabled):hover, #nav-forward:not(:disabled):hover {
       border-color: var(--accent); color: var(--accent);
     }
+
+    /* ── GUEST NUMBER BADGE ─────────────────────────── */
+    .guest-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; padding: 3px 10px; border-radius: 20px;
+      font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 800;
+      letter-spacing: .5px;
+    }
+
+    /* ── APPROVAL QUEUE ─────────────────────────────── */
+    .approval-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); overflow: hidden; margin-bottom: 14px;
+      transition: border-color .2s;
+    }
+    .approval-card.pending  { border-left: 4px solid var(--gold); }
+    .approval-card.approved { border-left: 4px solid var(--green); }
+    .approval-card.declined { border-left: 4px solid var(--red); opacity: .6; }
+    .ac-header {
+      display: flex; align-items: center; gap: 14px;
+      padding: 16px 18px; flex-wrap: wrap;
+    }
+    .ac-guest-num {
+      width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; color: #fff;
+    }
+    .ac-info { flex: 1; min-width: 0; }
+    .ac-name { font-size: 15px; font-weight: 600; }
+    .ac-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .ac-total { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: var(--accent); }
+    .ac-items { padding: 0 18px 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .ac-item-chip {
+      background: var(--surface2); border: 1px solid var(--border);
+      padding: 4px 10px; border-radius: 20px; font-size: 12px;
+    }
+    .ac-actions { display: flex; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--border); }
+    .ac-btn-approve {
+      flex: 1; padding: 9px; border-radius: 9px; border: none; cursor: pointer;
+      background: rgba(34,197,94,.12); color: var(--green); border: 1px solid rgba(34,197,94,.3);
+      font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif; transition: all .2s;
+    }
+    .ac-btn-approve:hover { background: rgba(34,197,94,.22); }
+    .ac-btn-decline {
+      flex: 1; padding: 9px; border-radius: 9px; border: none; cursor: pointer;
+      background: rgba(239,68,68,.1); color: var(--red); border: 1px solid rgba(239,68,68,.25);
+      font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif; transition: all .2s;
+    }
+    .ac-btn-decline:hover { background: rgba(239,68,68,.2); }
+    .ac-status-badge {
+      padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .5px;
+    }
+    .ac-status-badge.approved { background: rgba(34,197,94,.12); color: var(--green); }
+    .ac-status-badge.declined { background: rgba(239,68,68,.1); color: var(--red); }
+
+    /* ── CUSTOMER MY ORDERS TAB ─────────────────────── */
+    .co-order-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 20px; margin-bottom: 14px;
+      transition: border-color .3s;
+    }
+    .co-order-card.approved  { border-left: 4px solid var(--green); }
+    .co-order-card.pending   { border-left: 4px solid var(--gold); }
+    .co-order-card.declined  { border-left: 4px solid var(--red); opacity: .7; }
+    .co-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+    .co-order-id { font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+    .co-guest-line { display: flex; align-items: center; gap: 8px; }
+    .co-approval-badge {
+      padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .5px;
+    }
+    .co-approval-badge.pending  { background: rgba(245,158,11,.12); color: var(--gold); }
+    .co-approval-badge.approved { background: rgba(34,197,94,.12);  color: var(--green); }
+    .co-approval-badge.declined { background: rgba(239,68,68,.1);   color: var(--red); }
+    .co-items { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .co-item-chip { background: var(--surface2); border: 1px solid var(--border); padding: 4px 10px; border-radius: 20px; font-size: 12px; }
+    .co-footer { display: flex; justify-content: space-between; align-items: center; }
+    .co-total { font-family: 'Syne', sans-serif; font-size: 18px; color: var(--accent); }
+    .co-notif-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); margin-top: 10px; }
+    .co-notif-toggle {
+      display: flex; align-items: center; gap: 6px; cursor: pointer;
+      background: var(--surface2); border: 1px solid var(--border);
+      padding: 4px 10px; border-radius: 20px; font-size: 12px; transition: all .2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .co-notif-toggle.on { background: rgba(34,197,94,.1); border-color: rgba(34,197,94,.3); color: var(--green); }
+
+    /* ── NOTIFICATION TOAST extras ──────────────────── */
+    .toast-approved { border-color: rgba(34,197,94,.4); color: var(--green); }
+    .toast-declined { border-color: rgba(239,68,68,.4); color: var(--red); }
+
+    /* ── CUSTOMER NAV ORDER BADGE ───────────────────── */
+    .order-nav-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--accent); color: #fff; border-radius: 50%;
+      width: 16px; height: 16px; font-size: 10px; font-weight: 700;
+      margin-left: 4px; vertical-align: middle; animation: popIn .3s ease;
+    }
+    @keyframes popIn { from{transform:scale(0)} to{transform:scale(1)} }
   </style>
 </head>
 <body>
@@ -1115,6 +1217,7 @@
       <button class="nav-link active" data-view="home">Home</button>
       <button class="nav-link" data-view="restaurants">Restaurants</button>
       <button class="nav-link" data-view="tracker" id="tracker-nav-link">📡 Track Order <span class="tracker-nav-pulse" style="margin-left:2px"></span></button>
+      <button class="nav-link" data-view="myorders" id="myorders-nav-link" style="position:relative">🧾 My Orders<span id="my-orders-badge" style="display:none" class="order-nav-badge">!</span></button>
       <button class="nav-link" data-view="orders">My Orders</button>
       <button class="nav-link" data-view="loyalty">Rewards</button>
     </div>
@@ -1239,6 +1342,15 @@
   <div id="orders-content"></div>
 </div>
 
+<!-- VIEW: CUSTOMER ORDERS (full order tab) -->
+<div class="view" id="view-myorders">
+  <div class="page-header">
+    <h2>My Orders</h2>
+    <div id="customer-notif-status" style="font-size:13px;color:var(--muted)"></div>
+  </div>
+  <div id="myorders-content"></div>
+</div>
+
 <!-- VIEW: LOYALTY -->
 <div class="view" id="view-loyalty">
   <div class="page-header"><h2>My Rewards</h2></div>
@@ -1258,12 +1370,14 @@
   </div>
   <div class="page-header"><h2>Staff Dashboard</h2></div>
   <div class="admin-tabs">
+    <button class="admin-tab" onclick="Admin.showTab('approvals',this)" id="approvals-tab-btn">✅ Approve Orders <span id="pending-badge" style="display:none" class="order-nav-badge">0</span></button>
     <button class="admin-tab active" onclick="Admin.showTab('orders',this)">📦 All Orders</button>
     <button class="admin-tab" onclick="Admin.showTab('kitchen',this)">🔥 Kitchen Queue</button>
     <button class="admin-tab" onclick="Admin.showTab('reservations',this)">📅 Reservations</button>
     <button class="admin-tab" onclick="Admin.showTab('analytics',this)">📊 Analytics</button>
     <button class="admin-tab" onclick="Admin.showTab('notifications',this)" id="notif-tab-btn">🔔 Notifications</button>
   </div>
+  <div id="admin-approvals-tab" style="display:none"></div>
   <div id="admin-orders-tab"></div>
   <div id="admin-kitchen-tab" style="display:none"></div>
   <div id="admin-reservations-tab" style="display:none"></div>
@@ -1399,7 +1513,8 @@ const SEED_RESERVATIONS = [
 ═══════════════════════════════════════════════════════════ */
 const State = {
   role: null,           // 'customer' (guest) | 'staff'
-  currentUser: null,    // { role, name, initials, email, id, ... }
+  currentUser: null,    // { role, name, initials, email, id, guestNum, ... }
+  guestCounter: 0,      // auto-increments per session login
   points: 0,
   cart: [],
   currentRestaurant: null,
@@ -1465,25 +1580,40 @@ const Auth = {
     }
     errEl.style.display = 'none';
     const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) || name[0].toUpperCase();
-    State.currentUser = { role: 'customer', name, initials, id: 'guest-' + Date.now() };
+    State.guestCounter++;
+    const guestNum = State.guestCounter;
+    State.currentUser = { role: 'customer', name, initials, id: 'guest-' + Date.now(), guestNum, notifEnabled: true };
     State.points = 0;
     document.getElementById('login-overlay').style.display = 'none';
     this._applyCustomerUI();
     App.goTo('home');
-    Toast.show('👋 Welcome, ' + name + '!', 'success');
+    Toast.show('👋 Welcome, ' + name + '! You are Guest #' + guestNum, 'success');
   },
 
   /* ── Apply customer UI state ── */
   _applyCustomerUI() {
     const u = State.currentUser;
     document.getElementById('nav-avatar').textContent = u.initials;
-    document.getElementById('nav-avatar').title = u.name + ' — click to change name';
+    document.getElementById('nav-avatar').title = u.name + ' (Guest #' + u.guestNum + ') — click to change name';
+    // Show guest number pill in nav
+    let gnPill = document.getElementById('guest-num-pill');
+    if (!gnPill) {
+      gnPill = document.createElement('div');
+      gnPill.id = 'guest-num-pill';
+      gnPill.style.cssText = 'background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;font-family:"Syne",sans-serif;flex-shrink:0';
+      document.querySelector('.nav-user').insertBefore(gnPill, document.getElementById('nav-avatar'));
+    }
+    gnPill.textContent = '#' + u.guestNum;
     // Keep staff btn visible for guests too (they may want to switch to staff)
     const sb = document.getElementById('staff-login-btn');
     if (sb) sb.style.display = '';
-    // Tracker link visible for all guests
+    // Tracker + My Orders links visible for all guests
     const tl = document.getElementById('tracker-nav-link');
     if (tl) tl.style.display = '';
+    const ml = document.getElementById('myorders-nav-link');
+    if (ml) ml.style.display = '';
+    // Request push notification permission
+    CustomerOrders.requestNotifPermission();
     Loyalty.updatePoints();
     // Bind nav links
     document.querySelectorAll('.nav-link').forEach(btn => {
@@ -1684,6 +1814,7 @@ const App = {
     if (view === 'loyalty') Loyalty.render();
     if (view === 'admin') Admin.render();
     if (view === 'tracker') WaitTracker.renderCustomerView();
+    if (view === 'myorders') CustomerOrders.render();
 
     window.scrollTo({top:0, behavior:'smooth'});
   }
@@ -2019,9 +2150,11 @@ const Cart = {
       customerId: u.id,
       items: State.cart.map(x=>({name:x.name, qty:x.qty, price:x.price})),
       total,
-      status: 'confirmed',
+      status: 'pending',
+      approval: 'pending',  // 'pending' | 'approved' | 'declined'
       placedAt: new Date().toISOString(),
       type: 'dine-in',
+      guestNum: u.guestNum || null,
       points: Math.floor(total/100),
     };
     State.orders.unshift(newOrder);
@@ -2030,17 +2163,19 @@ const Cart = {
     this.updateFAB();
     this.close();
     Loyalty.updatePoints();
-    Toast.show(`🎉 Order ${orderId} placed! +${newOrder.points} pts`, 'success');
-    // Notify admin
+    Toast.show(`🎉 Order ${orderId} placed! Awaiting staff approval.`, 'success');
+    // Notify admin + show badge
     Notify.send(
-      `📦 New Order: ${orderId}`,
-      `Customer: James D.\nRestaurant: ${rest.name}\nItems: ${newOrder.items.map(i=>`${i.qty}× ${i.name}`).join(', ')}\nTotal: $${total.toFixed(2)}\nStatus: Confirmed\nTime: ${new Date().toLocaleString()}`,
+      `📦 New Order Pending: ${orderId}`,
+      `Guest #${u.guestNum || '?'} — ${u.name}\nRestaurant: ${rest ? rest.name : 'Island Vibes'}\nItems: ${newOrder.items.map(i=>`${i.qty}× ${i.name}`).join(', ')}\nTotal: J$${total.toLocaleString()}\nTime: ${new Date().toLocaleString()}`,
       'order'
     );
-    App.goTo('orders');
-    // Simulate status progression
-    setTimeout(() => { newOrder.status = 'preparing'; Orders.render(); }, 4000);
-    setTimeout(() => { newOrder.status = 'delivering'; Orders.render(); }, 9000);
+    // Update approval pending badge in staff dashboard
+    Admin.renderApprovals && Admin.renderApprovals();
+    // Show My Orders badge for customer
+    const mob = document.getElementById('my-orders-badge');
+    if (mob) { mob.style.display = 'inline-flex'; mob.textContent = '!'; }
+    App.goTo('myorders');
   }
 };
 
@@ -2228,6 +2363,7 @@ const Admin = {
   activeFilter: 'all',
 
   render() {
+    this.renderApprovals();
     this.renderOrders();
     this.renderReservations();
     this.renderAnalytics();
@@ -2238,9 +2374,10 @@ const Admin = {
     this.activeTab = tab;
     document.querySelectorAll('.admin-tab').forEach(b=>b.classList.remove('active'));
     btnEl.classList.add('active');
-    ['orders','kitchen','reservations','analytics','notifications'].forEach(t=>{
+    ['approvals','orders','kitchen','reservations','analytics','notifications'].forEach(t=>{
       document.getElementById(`admin-${t}-tab`).style.display = t===tab?'block':'none';
     });
+    if (tab === 'approvals') this.renderApprovals();
     if (tab === 'orders') this.renderOrders();
     if (tab === 'kitchen') WaitTracker.renderKitchen();
     if (tab === 'reservations') this.renderReservations();
@@ -2290,6 +2427,109 @@ const Admin = {
       `).join('')}
     `;
   },
+
+  renderApprovals() {
+    const el = document.getElementById('admin-approvals-tab');
+    if (!el) return;
+    const pending  = State.orders.filter(o => o.approval === 'pending');
+    const actioned = State.orders.filter(o => o.approval && o.approval !== 'pending');
+
+    // Update badge
+    const badge = document.getElementById('pending-badge');
+    if (badge) {
+      badge.textContent = pending.length;
+      badge.style.display = pending.length > 0 ? 'inline-flex' : 'none';
+    }
+
+    const renderCard = (o, showActions) => {
+      const age = Math.round((Date.now() - new Date(o.placedAt).getTime()) / 60000);
+      const guestLabel = o.guestNum ? '#' + o.guestNum + ' — ' : '';
+      return `
+        <div class="approval-card ${o.approval || 'pending'}">
+          <div class="ac-header">
+            <div class="ac-guest-num">${o.guestNum || '?'}</div>
+            <div class="ac-info">
+              <div class="ac-name">${o.customer}</div>
+              <div class="ac-meta">${o.id} · ${o.restaurantName} · ${age < 60 ? age + 'm ago' : Math.round(age/60) + 'h ago'}</div>
+            </div>
+            <div class="ac-total">J$${o.total.toLocaleString()}</div>
+          </div>
+          <div class="ac-items">
+            ${o.items.map(i => `<span class="ac-item-chip">${i.qty}× ${i.name}</span>`).join('')}
+          </div>
+          <div class="ac-actions">
+            ${showActions ? `
+              <button class="ac-btn-approve" onclick="Admin.approveOrder('${o.id}')">✅ Approve</button>
+              <button class="ac-btn-decline" onclick="Admin.declineOrder('${o.id}')">❌ Decline</button>
+            ` : `<span class="ac-status-badge ${o.approval}">${o.approval === 'approved' ? '✅ Approved' : '❌ Declined'}</span>`}
+          </div>
+        </div>`;
+    };
+
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+        <div>
+          <h3 style="font-size:18px">Order Approval Queue</h3>
+          <p style="color:var(--muted);font-size:13px;margin-top:3px">${pending.length} pending · ${actioned.length} actioned</p>
+        </div>
+        ${pending.length > 0 ? `
+          <div style="display:flex;gap:8px">
+            <button onclick="Admin.approveAll()" style="background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:var(--green);padding:7px 16px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">✅ Approve All</button>
+          </div>` : ''}
+      </div>
+      ${pending.length === 0 ? `
+        <div style="text-align:center;padding:60px 20px;color:var(--muted)">
+          <div style="font-size:48px;margin-bottom:12px">✅</div>
+          <p>No pending orders. All caught up!</p>
+        </div>` : ''}
+      ${pending.map(o => renderCard(o, true)).join('')}
+      ${actioned.length > 0 ? `
+        <h4 style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:24px 0 12px">Recent Decisions</h4>
+        ${actioned.slice(0,6).map(o => renderCard(o, false)).join('')}
+      ` : ''}
+    `;
+  },
+
+  approveOrder(orderId) {
+    const o = State.orders.find(x => x.id === orderId);
+    if (!o) return;
+    o.approval = 'approved';
+    o.status   = 'confirmed';
+    Toast.show('✅ Order ' + orderId + ' approved!', 'success');
+    // Show badge on My Orders
+    const mob = document.getElementById('my-orders-badge');
+    if (mob) { mob.style.display = 'inline-flex'; mob.textContent = '!'; }
+    App.goTo('myorders');
+    Notify.send('✅ Order Approved — ' + orderId,
+      'Guest #' + (o.guestNum || '?') + ' (' + o.customer + ')\nOrder: ' + orderId + '\nItems: ' + o.items.map(i => i.qty + '× ' + i.name).join(', ') + '\nTotal: J$' + o.total.toLocaleString() + '\nApproved at: ' + new Date().toLocaleString(), 'order');
+    // Notify customer via in-page alert
+    CustomerOrders.notifyCustomer(orderId, 'approved');
+    this.renderApprovals();
+    this.renderOrders();
+  },
+
+  declineOrder(orderId) {
+    const o = State.orders.find(x => x.id === orderId);
+    if (!o) return;
+    o.approval = 'declined';
+    o.status   = 'cancelled';
+    Toast.show('❌ Order ' + orderId + ' declined.', 'warn');
+    Notify.send('❌ Order Declined — ' + orderId,
+      'Guest #' + (o.guestNum || '?') + ' (' + o.customer + ')\nOrder: ' + orderId + '\nDeclined at: ' + new Date().toLocaleString(), 'order');
+    CustomerOrders.notifyCustomer(orderId, 'declined');
+    this.renderApprovals();
+    this.renderOrders();
+  },
+
+  approveAll() {
+    const pending = State.orders.filter(o => o.approval === 'pending');
+    pending.forEach(o => { o.approval = 'approved'; o.status = 'confirmed'; CustomerOrders.notifyCustomer(o.id, 'approved'); });
+    Toast.show('✅ ' + pending.length + ' orders approved!', 'success');
+    Notify.send('✅ Bulk Approval', pending.length + ' orders approved at ' + new Date().toLocaleString(), 'order');
+    this.renderApprovals();
+    this.renderOrders();
+  },
+
 
   renderOrders() {
     const el = document.getElementById('admin-orders-tab');
@@ -2998,6 +3238,120 @@ const WaitTracker = {
 
 
 /* ── Init tracker on page load ──────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   CUSTOMER ORDERS MODULE
+   Shows guest their placed orders + approval status + notifications
+═══════════════════════════════════════════════════════════ */
+const CustomerOrders = {
+  _pendingNotifs: {},  // orderId → { status, seen }
+
+  render() {
+    const el = document.getElementById('myorders-content');
+    if (!el) return;
+    const uid = State.currentUser?.id;
+    const myOrders = uid ? State.orders.filter(o => o.customerId === uid) : [];
+
+    // Mark badge as seen
+    const badge = document.getElementById('my-orders-badge');
+    if (badge) badge.style.display = 'none';
+
+    if (myOrders.length === 0) {
+      el.innerHTML = `
+        <div style="text-align:center;padding:80px 20px;color:var(--muted)">
+          <div style="font-size:48px;margin-bottom:16px">🧾</div>
+          <p style="font-size:16px;margin-bottom:8px">No orders yet</p>
+          <p style="font-size:14px">Browse the menu and place your first order!</p>
+          <button class="btn-primary" style="margin-top:20px" onclick="App.goTo('restaurants')">Browse Menu</button>
+        </div>`;
+      return;
+    }
+
+    const notifOn = State.currentUser?.notifEnabled !== false;
+    document.getElementById('customer-notif-status').innerHTML = `
+      <button onclick="CustomerOrders.toggleNotif()" class="co-notif-toggle ${notifOn ? 'on' : ''}" style="border:1px solid var(--border)">
+        ${notifOn ? '🔔 Notifications on' : '🔕 Notifications off'}
+      </button>`;
+
+    el.innerHTML = myOrders.map(o => {
+      const age = Math.round((Date.now() - new Date(o.placedAt).getTime()) / 60000);
+      const approval = o.approval || 'pending';
+      const approvalLabels = { pending: '⏳ Awaiting approval', approved: '✅ Approved', declined: '❌ Declined' };
+      const statusLabel = o.status === 'cancelled' ? 'Cancelled' : o.status;
+      return `
+        <div class="co-order-card ${approval}">
+          <div class="co-header">
+            <div>
+              <div class="co-order-id">${o.id} · ${age < 60 ? age + 'm ago' : Math.round(age/60) + 'h ago'}</div>
+              <div class="co-guest-line">
+                <span style="font-size:15px;font-weight:600">${o.restaurantName}</span>
+                ${o.guestNum ? `<span class="guest-badge">#${o.guestNum}</span>` : ''}
+              </div>
+            </div>
+            <span class="co-approval-badge ${approval}">${approvalLabels[approval]}</span>
+          </div>
+          <div class="co-items">
+            ${o.items.map(i => `<span class="co-item-chip">${i.qty}× ${i.name}</span>`).join('')}
+          </div>
+          <div class="co-footer">
+            <span class="co-total">J$${o.total.toLocaleString()}</span>
+            <span style="font-size:12px;color:var(--muted)">Status: <strong style="color:var(--text)">${statusLabel}</strong></span>
+          </div>
+          ${approval === 'declined' ? `
+            <div style="margin-top:12px;padding:10px 14px;background:rgba(239,68,68,.06);border-radius:8px;font-size:13px;color:var(--muted)">
+              Your order was not approved. Please speak to a staff member or re-order.
+            </div>` : ''}
+          ${approval === 'approved' ? `
+            <div style="margin-top:12px;padding:10px 14px;background:rgba(34,197,94,.06);border-radius:8px;font-size:13px;color:var(--green)">
+              ✅ Your order is confirmed and being prepared!
+            </div>` : ''}
+        </div>`;
+    }).join('');
+  },
+
+  toggleNotif() {
+    if (State.currentUser) {
+      State.currentUser.notifEnabled = !State.currentUser.notifEnabled;
+      const on = State.currentUser.notifEnabled;
+      Toast.show(on ? '🔔 Order notifications enabled' : '🔕 Notifications disabled', 'info');
+      this.render();
+    }
+  },
+
+  notifyCustomer(orderId, decision) {
+    // Show badge on My Orders nav
+    const badge = document.getElementById('my-orders-badge');
+    if (badge) { badge.style.display = 'inline-flex'; badge.textContent = '!'; }
+
+    // If customer has notifications enabled + is the owner, show toast
+    const o = State.orders.find(x => x.id === orderId);
+    if (!o) return;
+    if (State.currentUser && o.customerId === State.currentUser.id && State.currentUser.notifEnabled !== false) {
+      if (decision === 'approved') {
+        Toast.show('✅ Your order ' + orderId + ' has been approved!', 'approved');
+        // Browser notification if permitted
+        if (window.Notification && Notification.permission === 'granted') {
+          new Notification('DineFlow — Order Approved', { body: 'Your order ' + orderId + ' is confirmed!', icon: '' });
+        }
+      } else {
+        Toast.show('❌ Your order ' + orderId + ' was declined.', 'declined');
+      }
+    }
+    // Refresh view if open
+    if (document.getElementById('view-myorders')?.classList.contains('active')) {
+      this.render();
+    }
+  },
+
+  requestNotifPermission() {
+    if (window.Notification && Notification.permission === 'default') {
+      Notification.requestPermission().then(perm => {
+        if (perm === 'granted') Toast.show('🔔 Push notifications enabled!', 'success');
+      });
+    }
+  }
+};
+
+
 WaitTracker.init();
 
 /* Update price label when variant dropdown changes */
