@@ -353,6 +353,42 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 .dropdown-item:hover{background:var(--surface2)}
 #profile-dropdown{animation:fadeIn .15s ease}
 @keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══════════ MESSAGING SYSTEM ═══════════ */
+/* Chat bubble - customer side */
+.msg-bubble{display:flex;flex-direction:column;max-width:80%;margin-bottom:10px}
+.msg-bubble.from-customer{align-items:flex-end;margin-left:auto}
+.msg-bubble.from-staff{align-items:flex-start}
+.msg-text{padding:10px 14px;border-radius:18px;font-size:13px;line-height:1.5;word-break:break-word}
+.msg-bubble.from-customer .msg-text{background:var(--accent);color:#fff;border-bottom-right-radius:4px}
+.msg-bubble.from-staff .msg-text{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-bottom-left-radius:4px}
+.msg-meta{font-size:10px;color:var(--muted);margin-top:3px;padding:0 2px}
+.msg-list{display:flex;flex-direction:column;padding:16px;overflow-y:auto;flex:1;gap:2px}
+.msg-input-row{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.msg-input-row input{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 13px;border-radius:22px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none}
+.msg-input-row input:focus{border-color:var(--accent)}
+.msg-send-btn{width:36px;height:36px;border-radius:50%;background:var(--accent);border:none;color:#fff;cursor:pointer;font-size:16px;display:grid;place-items:center;flex-shrink:0;transition:background .2s}
+.msg-send-btn:hover{background:var(--accent2)}
+/* Staff chat panel */
+.staff-chat-wrap{display:flex;flex-direction:column;height:420px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.staff-chat-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.chat-select{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 10px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer}
+/* Customer chat widget */
+.customer-chat-btn{position:fixed;bottom:80px;right:22px;z-index:190;width:48px;height:48px;border-radius:50%;background:var(--accent);border:none;color:#fff;font-size:22px;cursor:pointer;box-shadow:0 6px 20px rgba(249,115,22,.4);transition:transform .2s;display:none}
+.customer-chat-btn:hover{transform:scale(1.1)}
+.customer-chat-bubble{display:none;position:absolute;top:-8px;right:-4px;background:var(--red);color:#fff;border-radius:50%;width:16px;height:16px;font-size:10px;font-weight:700;align-items:center;justify-content:center}
+.customer-chat-panel{position:fixed;bottom:140px;right:22px;z-index:190;width:320px;max-width:calc(100vw - 40px);background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,.5);display:none;flex-direction:column;height:420px;overflow:hidden}
+.customer-chat-panel.open{display:flex}
+.ccp-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);border-radius:18px 18px 0 0}
+.ccp-status{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.ccp-live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.4s infinite}
+@keyframes msgPop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+.msg-text{animation:msgPop .2s ease}
+.msg-date-divider{text-align:center;font-size:11px;color:var(--muted);margin:8px 0;position:relative}
+.msg-date-divider::before,.msg-date-divider::after{content:'';position:absolute;top:50%;width:35%;height:1px;background:var(--border)}
+.msg-date-divider::before{left:0} .msg-date-divider::after{right:0}
+/* Unread badge on staff messages tab */
+.chat-unread-badge{display:inline-flex;align-items:center;justify-content:center;background:var(--red);color:#fff;border-radius:50%;width:16px;height:16px;font-size:10px;font-weight:700;margin-left:4px}
 </style>
 </head>
 <body>
@@ -454,6 +490,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
           <button onclick="App.go('tracker');Profile.close()" class="dropdown-item">📡 Track Order</button>
           <button onclick="App.go('loyalty');Profile.close()" class="dropdown-item">⭐ My Rewards</button>
           <button onclick="App.go('reservations');Profile.close()" class="dropdown-item" id="dd-reservations" style="display:none">📅 My Reservations</button>
+          <button onclick="ChatWidget.open();Profile.close()" class="dropdown-item" id="dd-messages-btn">💬 Messages<span id="dd-msg-count" style="display:none;background:var(--red);color:#fff;border-radius:50%;width:16px;height:16px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-left:6px">0</span></button>
           <button onclick="Profile.showNotifications()" class="dropdown-item">🔔 Notifications<span id="dd-notif-count" style="display:none;background:var(--red);color:#fff;border-radius:50%;width:16px;height:16px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-left:6px">0</span></button>
           <button onclick="Profile.showSettings()" class="dropdown-item">⚙️ Settings</button>
           <div style="border-top:1px solid var(--border);margin:6px 0"></div>
@@ -588,12 +625,14 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
     <button class="admin-tab" data-tab="orders" onclick="Staff.showTab('orders',this)">📦 All Orders</button>
     <button class="admin-tab" data-tab="reservtab" onclick="Staff.showTab('reservtab',this)">📅 Reservations</button>
     <button class="admin-tab" data-tab="sms" onclick="Staff.showTab('sms',this)">💬 SMS Log</button>
+    <button class="admin-tab" data-tab="chat" onclick="Staff.showTab('chat',this)">💬 Messages<span id="chat-staff-badge" class="badge" style="display:none">0</span></button>
     <button class="admin-tab" data-tab="notifs" onclick="Staff.showTab('notifs',this)">🔔 Notifications<span id="notif-bell-count" class="badge" style="display:none">0</span></button>
   </div>
   <div id="staff-approvals"></div>
   <div id="staff-kitchen" style="display:none"></div>
   <div id="staff-orders" style="display:none"></div>
   <div id="staff-reservtab" style="display:none"></div>
+  <div id="staff-chat" style="display:none"></div>
   <div id="staff-sms" style="display:none"></div>
   <div id="staff-notifs" style="display:none"></div>
 </div>
@@ -612,6 +651,33 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 <div class="modal-box" id="res-modal">
   <div class="modal-header"><h3 id="res-modal-title">Reserve a Table</h3><button class="modal-close" onclick="ResModal.close()">✕</button></div>
   <div class="modal-body" id="res-modal-body"></div>
+</div>
+
+<!-- CUSTOMER CHAT BUTTON -->
+<button class="customer-chat-btn" id="customer-chat-btn" onclick="ChatWidget.toggle()" title="Message staff">
+  💬<span class="customer-chat-bubble" id="chat-notif-dot"></span>
+</button>
+
+<!-- CUSTOMER CHAT PANEL -->
+<div class="customer-chat-panel" id="customer-chat-panel">
+  <div class="ccp-header">
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px">💬 Message Staff</div>
+      <div class="ccp-status"><span class="ccp-live-dot"></span>Staff typically replies within minutes</div>
+    </div>
+    <button onclick="ChatWidget.close()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1">×</button>
+  </div>
+  <div class="msg-list" id="customer-msg-list">
+    <div style="text-align:center;padding:24px 16px;color:var(--muted);font-size:13px">
+      <div style="font-size:28px;margin-bottom:8px">👋</div>
+      <p>Hi! Send us a message and our team will get back to you shortly.</p>
+    </div>
+  </div>
+  <div class="msg-input-row">
+    <input type="text" id="customer-msg-input" placeholder="Type a message…" maxlength="300"
+      onkeydown="if(event.key==='Enter')ChatWidget.send()"/>
+    <button class="msg-send-btn" onclick="ChatWidget.send()">➤</button>
+  </div>
 </div>
 
 <!-- TOAST -->
@@ -681,7 +747,8 @@ const State = (() => {
 
   const SHARED_DEFAULTS = {
     orders: [], reservations: [], notifications: [],
-    smsLog: [], liveOrders: [], guestCounter: 0
+    smsLog: [], liveOrders: [], guestCounter: 0,
+    messages: []  // two-way chat messages between customer & staff
   };
   const LOCAL_DEFAULTS = {
     role: null, currentUser: null, cart: [], points: 0
@@ -719,7 +786,7 @@ const State = (() => {
   };
 
   // ── Save: split writes to correct storage ──
-  const SHARED_KEYS = ['orders','reservations','notifications','smsLog','liveOrders','guestCounter'];
+  const SHARED_KEYS = ['orders','reservations','notifications','smsLog','liveOrders','guestCounter','messages'];
   const LOCAL_KEYS  = ['role','currentUser','cart','points'];
 
   const saveShared = () => {
@@ -771,6 +838,17 @@ const State = (() => {
         const unread = (_s.notifications||[]).filter(n=>!n.read).length;
         const nb = document.getElementById('notif-bell-count');
         if (nb) { nb.textContent=unread; nb.style.display=unread>0?'inline-flex':'none'; }
+        // Refresh staff chat if open
+        if (typeof StaffChat !== 'undefined' && Staff.activeTab === 'chat') {
+          StaffChat.render();
+          StaffChat._updateBadge();
+        }
+        // Update staff chat badge on nav
+        const chatBadge = document.getElementById('chat-staff-badge');
+        if (chatBadge) {
+          const unread = (_s.messages||[]).filter(m=>m.from==='customer'&&!m.read).length;
+          chatBadge.textContent=unread; chatBadge.style.display=unread>0?'inline-flex':'none';
+        }
         // Flash "New Order" alert banner
         const latest = (_s.orders||[])[0];
         if (latest && latest.approval==='pending') {
@@ -933,6 +1011,8 @@ const Auth = {
       btn.onclick = () => App.go(btn.dataset.view);
     });
     Loyalty.updatePts();
+    // Show chat widget
+    setTimeout(() => { if (typeof ChatWidget !== 'undefined') ChatWidget.show(); }, 300);
   },
 
   showStaffModal() {
@@ -984,6 +1064,7 @@ const Auth = {
     ['tracker-link','myorders-link','reservations-link'].forEach(id=>{
       const el=document.getElementById(id); if(el) el.style.display='none';
     });
+    if (typeof ChatWidget !== 'undefined') ChatWidget.hide();
     const navLinks = document.getElementById('nav-links');
     if (!document.querySelector('[data-view="admin"]')) {
       const btn = document.createElement('button');
@@ -1671,7 +1752,7 @@ const Staff = {
         b.classList.toggle('active', b.dataset.tab===tab);
       });
     }
-    ['approvals','kitchen','orders','reservtab','sms','notifs'].forEach(t=>{
+    ['approvals','kitchen','orders','reservtab','chat','sms','notifs'].forEach(t=>{
       const el=document.getElementById('staff-'+t);
       if(el) el.style.display=t===tab?'block':'none';
     });
@@ -1679,6 +1760,7 @@ const Staff = {
     if (tab==='kitchen')    this.renderKitchen();
     if (tab==='orders')     this.renderAllOrders();
     if (tab==='reservtab')  this.renderAllReservations();
+    if (tab==='chat')        StaffChat.render();
     if (tab==='sms')        this.renderSMS();
     if (tab==='notifs')     this.renderNotifs();
   },
@@ -2143,7 +2225,7 @@ const Poller = {
           const myRole = State.role;
           const myUser = State.currentUser;
           // Only sync shared data (orders, reservations, notifications, smsLog, liveOrders)
-          ['orders','reservations','notifications','smsLog','liveOrders','guestCounter'].forEach(k => {
+          ['orders','reservations','notifications','smsLog','liveOrders','guestCounter','messages'].forEach(k => {
             if (fresh[k] !== undefined) State[k] = fresh[k];
           });
         }
@@ -2164,6 +2246,11 @@ const Poller = {
       // Auto-refresh customer "My Orders" if open
       if (document.getElementById('view-myorders')?.classList.contains('active')) {
         MyOrders.render();
+      }
+      // Update customer chat widget badge + messages
+      if (State.role === 'customer' && typeof ChatWidget !== 'undefined') {
+        ChatWidget._updateBadge();
+        if (ChatWidget._open) { ChatWidget.renderMessages(); }
       }
     }, 2000);
     DineLog.info('Real-time polling started (3s interval)');
@@ -2317,6 +2404,329 @@ const Reservations = {
 
 
 /* ═══════════════════════════════════
+   CHAT SYSTEM — Two-way customer ↔ staff
+   Messages stored in shared State.messages
+   Each message: { id, orderId, guestNum, guestName, from ('customer'|'staff'),
+                   text, ts, read (staff read), readByCustomer }
+═══════════════════════════════════ */
+
+/* ── Helper ── */
+const ChatUtils = {
+  fmtTime(ts) {
+    const d = new Date(ts);
+    const now = new Date();
+    const isToday = d.toDateString() === now.toDateString();
+    return isToday
+      ? d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+      : d.toLocaleDateString([], {month:'short', day:'numeric'}) + ' ' + d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  },
+
+  getThreads() {
+    const msgs = State.messages || [];
+    // Group messages by guestNum
+    const threads = {};
+    msgs.forEach(m => {
+      const key = m.guestNum || 'anon';
+      if (!threads[key]) threads[key] = { guestNum:m.guestNum, guestName:m.guestName, orderId:m.orderId, msgs:[] };
+      threads[key].msgs.push(m);
+    });
+    return Object.values(threads);
+  },
+
+  unreadForCustomer(guestNum) {
+    return (State.messages||[]).filter(m => m.guestNum===guestNum && m.from==='staff' && !m.readByCustomer).length;
+  },
+
+  unreadForStaff() {
+    return (State.messages||[]).filter(m => m.from==='customer' && !m.read).length;
+  }
+};
+
+/* ═══════════════════════════════════
+   CUSTOMER CHAT WIDGET
+═══════════════════════════════════ */
+const ChatWidget = {
+  _open: false,
+  _pollInterval: null,
+
+  show() {
+    const btn = document.getElementById('customer-chat-btn');
+    if (btn) btn.style.display = 'grid';
+    this._startPoll();
+  },
+
+  hide() {
+    const btn = document.getElementById('customer-chat-btn');
+    if (btn) btn.style.display = 'none';
+    const panel = document.getElementById('customer-chat-panel');
+    if (panel) panel.classList.remove('open');
+    this._open = false;
+  },
+
+  toggle() {
+    if (this._open) this.close(); else this.open();
+  },
+
+  open() {
+    const panel = document.getElementById('customer-chat-panel');
+    if (!panel) return;
+    panel.classList.add('open');
+    this._open = true;
+    this._markReadByCustomer();
+    this._updateBadge();
+    this.renderMessages();
+    setTimeout(() => {
+      const input = document.getElementById('customer-msg-input');
+      if (input) input.focus();
+      this._scrollBottom();
+    }, 100);
+  },
+
+  close() {
+    const panel = document.getElementById('customer-chat-panel');
+    if (panel) panel.classList.remove('open');
+    this._open = false;
+  },
+
+  send() {
+    const u = State.currentUser;
+    if (!u) return;
+    const input = document.getElementById('customer-msg-input');
+    if (!input) return;
+    const text = input.value.trim();
+    if (!text) return;
+
+    const msg = {
+      id: 'MSG-' + Date.now(),
+      guestNum: u.guestNum,
+      guestName: u.name,
+      customerId: u.id,
+      orderId: (State.orders||[]).find(o=>o.customerId===u.id)?.id || null,
+      from: 'customer',
+      text,
+      ts: new Date().toISOString(),
+      read: false,           // staff hasn't read
+      readByCustomer: true   // customer sent it
+    };
+
+    State.messages = [msg, ...(State.messages||[])];
+    input.value = '';
+    this.renderMessages();
+    this._scrollBottom();
+
+    // Staff badge update
+    DineLog.info('Customer message sent', {from: u.name, text: text.slice(0,40)});
+    Notify.send('💬 Message from Guest #'+u.guestNum+' '+u.name, text, 'info');
+    Toast.show('Message sent to staff ✓', 'success');
+  },
+
+  renderMessages() {
+    const el = document.getElementById('customer-msg-list');
+    if (!el) return;
+    const u = State.currentUser;
+    if (!u) return;
+    const myMsgs = (State.messages||[])
+      .filter(m => m.guestNum === u.guestNum || m.customerId === u.id)
+      .slice().reverse(); // oldest first
+
+    if (myMsgs.length === 0) {
+      el.innerHTML = '<div style="text-align:center;padding:24px 16px;color:var(--muted);font-size:13px"><div style="font-size:28px;margin-bottom:8px">👋</div><p>Send us a message and our team will reply shortly.</p></div>';
+      return;
+    }
+
+    el.innerHTML = myMsgs.map(m => `
+      <div class="msg-bubble from-${m.from}">
+        <div class="msg-text">${this._escHtml(m.text)}</div>
+        <div class="msg-meta">${m.from==='staff'?'🛠 Staff · ':'You · '}${ChatUtils.fmtTime(m.ts)}${m.from==='customer'&&m.read?' · ✓✓ Seen':''}</div>
+      </div>`).join('');
+  },
+
+  _escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  },
+
+  _scrollBottom() {
+    const el = document.getElementById('customer-msg-list');
+    if (el) el.scrollTop = el.scrollHeight;
+  },
+
+  _markReadByCustomer() {
+    const u = State.currentUser;
+    if (!u) return;
+    let changed = false;
+    (State.messages||[]).forEach(m => {
+      if (m.guestNum===u.guestNum && m.from==='staff' && !m.readByCustomer) {
+        m.readByCustomer = true; changed = true;
+      }
+    });
+    if (changed) State.messages = [...(State.messages||[])];
+  },
+
+  _updateBadge() {
+    const u = State.currentUser;
+    if (!u) return;
+    const unread = ChatUtils.unreadForCustomer(u.guestNum);
+    const dot = document.getElementById('chat-notif-dot');
+    if (dot) { dot.textContent=unread||''; dot.style.display=unread>0?'inline-flex':'none'; }
+    const ddCount = document.getElementById('dd-msg-count');
+    if (ddCount) { ddCount.textContent=unread||''; ddCount.style.display=unread>0?'inline-flex':'none'; }
+  },
+
+  _startPoll() {
+    clearInterval(this._pollInterval);
+    this._pollInterval = setInterval(() => {
+      this._updateBadge();
+      if (this._open) {
+        this._markReadByCustomer();
+        this.renderMessages();
+        this._scrollBottom();
+      }
+    }, 1500);
+  },
+
+  onNewStaffMessage(guestNum) {
+    const u = State.currentUser;
+    if (!u || u.guestNum !== guestNum) return;
+    this._updateBadge();
+    if (this._open) { this.renderMessages(); this._scrollBottom(); }
+    else {
+      Toast.show('💬 New message from staff!', 'info');
+    }
+  }
+};
+
+/* ═══════════════════════════════════
+   STAFF CHAT RENDERER
+═══════════════════════════════════ */
+const StaffChat = {
+  _activeThread: null,   // guestNum of currently viewed thread
+
+  render() {
+    const el = document.getElementById('staff-chat');
+    if (!el) return;
+    this._updateBadge();
+    const threads = ChatUtils.getThreads();
+
+    el.innerHTML = `
+      <div style="display:flex;gap:16px;height:500px;min-height:400px">
+
+        <!-- Thread list (left column) -->
+        <div style="width:220px;flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow-y:auto">
+          <div style="padding:12px 14px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid var(--border)">
+            Conversations <span style="color:var(--text);font-weight:600">(${threads.length})</span>
+          </div>
+          ${threads.length===0 ? '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">No messages yet</div>' : ''}
+          ${threads.map(th => {
+            const last = th.msgs[0];
+            const unread = th.msgs.filter(m=>m.from==='customer'&&!m.read).length;
+            const isActive = this._activeThread===th.guestNum;
+            return `<div onclick="StaffChat.openThread(${th.guestNum})"
+              style="padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;background:${isActive?'var(--staff-light)':'transparent'};transition:background .15s">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+                <span style="font-weight:600;font-size:13px;color:var(--text)">Guest #${th.guestNum}</span>
+                ${unread>0?`<span style="background:var(--red);color:#fff;border-radius:50%;width:16px;height:16px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center">${unread}</span>`:''}
+              </div>
+              <div style="font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${th.guestName}</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${last?.text?.slice(0,35)||''}…</div>
+            </div>`;
+          }).join('')}
+        </div>
+
+        <!-- Chat window (right column) -->
+        <div style="flex:1;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+          ${this._activeThread ? this._renderThread() : '<div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;flex-direction:column;gap:8px"><span style="font-size:32px">💬</span>Select a conversation to reply</div>'}
+        </div>
+
+      </div>`;
+  },
+
+  _renderThread() {
+    const gn = this._activeThread;
+    const msgs = (State.messages||[])
+      .filter(m => m.guestNum===gn)
+      .slice().reverse(); // oldest first
+    const thread = ChatUtils.getThreads().find(th=>th.guestNum===gn);
+
+    return `
+      <div class="staff-chat-header">
+        <div>
+          <div style="font-weight:700;font-size:14px">Guest #${gn} — ${thread?.guestName||'Unknown'}</div>
+          ${thread?.orderId?`<div style="font-size:12px;color:var(--muted)">Order: ${thread.orderId}</div>`:''}
+        </div>
+        <span class="ccp-status"><span class="ccp-live-dot"></span>Live</span>
+      </div>
+      <div class="msg-list" id="staff-msg-list-${gn}">
+        ${msgs.length===0?'<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px">No messages yet</div>':''}
+        ${msgs.map(m=>`
+          <div class="msg-bubble from-${m.from==='staff'?'customer':'staff'}" style="${m.from==='customer'?'align-items:flex-start':'align-items:flex-end;margin-left:auto'}">
+            <div class="msg-text" style="${m.from==='customer'?'background:var(--surface2);border:1px solid var(--border)':'background:var(--staff);color:#fff'}">${m.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+            <div class="msg-meta">${m.from==='customer'?'Guest #'+gn+' · ':'Staff · '}${ChatUtils.fmtTime(m.ts)}</div>
+          </div>`).join('')}
+      </div>
+      <div class="msg-input-row">
+        <input type="text" id="staff-reply-input" placeholder="Reply to Guest #${gn}…" maxlength="300"
+          onkeydown="if(event.key==='Enter')StaffChat.reply()"/>
+        <button class="msg-send-btn" style="background:var(--staff)" onclick="StaffChat.reply()">➤</button>
+      </div>`;
+  },
+
+  openThread(guestNum) {
+    this._activeThread = guestNum;
+    // Mark all customer messages in this thread as read
+    let changed=false;
+    (State.messages||[]).forEach(m=>{
+      if(m.guestNum===guestNum && m.from==='customer' && !m.read){m.read=true;changed=true;}
+    });
+    if(changed) State.messages=[...(State.messages||[])];
+    this._updateBadge();
+    this.render();
+    // Scroll to bottom
+    setTimeout(()=>{
+      const el=document.getElementById('staff-msg-list-'+guestNum);
+      if(el) el.scrollTop=el.scrollHeight;
+    },50);
+  },
+
+  reply() {
+    const gn = this._activeThread;
+    if (!gn) return;
+    const input = document.getElementById('staff-reply-input');
+    if (!input) return;
+    const text = input.value.trim();
+    if (!text) return;
+
+    const thread = ChatUtils.getThreads().find(th=>th.guestNum===gn);
+    const msg = {
+      id: 'MSG-' + Date.now(),
+      guestNum: gn,
+      guestName: thread?.guestName || 'Guest #'+gn,
+      customerId: thread?.msgs?.[0]?.customerId || null,
+      orderId: thread?.orderId || null,
+      from: 'staff',
+      text,
+      ts: new Date().toISOString(),
+      read: true,
+      readByCustomer: false
+    };
+
+    State.messages = [msg, ...(State.messages||[])];
+    input.value = '';
+    DineLog.info('Staff reply sent to Guest #'+gn, {text:text.slice(0,40)});
+
+    // Notify customer widget
+    ChatWidget.onNewStaffMessage(gn);
+    this.render();
+  },
+
+  _updateBadge() {
+    const unread = ChatUtils.unreadForStaff();
+    const badge = document.getElementById('chat-staff-badge');
+    if (badge) { badge.textContent=unread; badge.style.display=unread>0?'inline-flex':'none'; }
+  }
+};
+
+
+/* ═══════════════════════════════════
    INIT
 ═══════════════════════════════════ */
 // Restore session if persisted
@@ -2326,6 +2736,7 @@ const Reservations = {
     document.getElementById('login-overlay').style.display = 'none';
     Auth._applyGuestUI();
     App._go('home');
+    setTimeout(() => { if (typeof ChatWidget !== 'undefined') ChatWidget.show(); }, 300);
   } else if (u && u.role === 'staff') {
     document.getElementById('login-overlay').style.display = 'none';
     Auth._applyStaffUI();
@@ -2345,7 +2756,7 @@ const Reservations = {
       const raw = localStorage.getItem('df_shared_v3');
       if (raw) {
         const fresh = JSON.parse(raw);
-        ['orders','reservations','notifications','smsLog','liveOrders','guestCounter'].forEach(k => {
+        ['orders','reservations','notifications','smsLog','liveOrders','guestCounter','messages'].forEach(k => {
           if (fresh[k] !== undefined) State[k] = fresh[k];
         });
       }
