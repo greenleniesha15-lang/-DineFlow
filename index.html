@@ -89,6 +89,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 /* BADGES */
 .badge{display:inline-flex;align-items:center;justify-content:center;background:var(--accent);color:#fff;border-radius:50%;width:16px;height:16px;font-size:10px;font-weight:700;margin-left:4px;vertical-align:middle}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(249,115,22,.4)}50%{box-shadow:0 0 0 8px rgba(249,115,22,0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
 @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
 
 /* HOME HERO */
@@ -673,58 +674,142 @@ const STAGES = [
    STATE (persistent across soft refreshes via sessionStorage)
 ═══════════════════════════════════ */
 const State = (() => {
-  const KEY = 'df_state_v2';
-  const defaults = {
-    role: null, currentUser: null, guestCounter: 0,
-    points: 0, cart: [], orders: [], reservations: [],
-    smsLog: [], notifications: [],
-    liveOrders: [] // kitchen queue
-  };
-  let _s = defaults;
+  // SHARED keys: written to localStorage, visible across ALL tabs (customer + staff)
+  const SHARED_KEY  = 'df_shared_v3';
+  // LOCAL keys: per-tab only (role, session, cart) — stored in sessionStorage
+  const LOCAL_KEY   = 'df_local_v3';
 
-  // Seed some demo kitchen orders
+  const SHARED_DEFAULTS = {
+    orders: [], reservations: [], notifications: [],
+    smsLog: [], liveOrders: [], guestCounter: 0
+  };
+  const LOCAL_DEFAULTS = {
+    role: null, currentUser: null, cart: [], points: 0
+  };
+
+  let _s = { ...SHARED_DEFAULTS, ...LOCAL_DEFAULTS };
+
+  // ── Seed demo kitchen orders (only if shared store is empty) ──
   const seedLive = () => {
-    if (_s.liveOrders.length > 0) return;
+    if (_s.liveOrders && _s.liveOrders.length > 0) return;
     const now = Date.now();
     _s.liveOrders = [
       { id:'LT-A1', guestNum:1, guestName:'Maria', phone:'+1876555001', tableNo:'T-03',
         restaurant:'Island Vibes', items:[{name:'Wings — 6 Wings',qty:1},{name:'Rice n Peas',qty:1}],
         totalSecs:900, remainingSecs:480, stage:'cooking', paused:false,
-        placedAt:new Date(now-420000).toISOString(), delayFlag:false, notifiedAlmost:false, waiterConfirmed:true },
+        placedAt:new Date(now-420000).toISOString(), delayFlag:false, notifiedAlmost:false },
       { id:'LT-A2', guestNum:2, guestName:'Tom', phone:'+1876555002', tableNo:'T-07',
         restaurant:'Island Vibes', items:[{name:'Salmon',qty:1},{name:'Fries',qty:1}],
         totalSecs:1200, remainingSecs:850, stage:'preparing', paused:false,
-        placedAt:new Date(now-350000).toISOString(), delayFlag:false, notifiedAlmost:false, waiterConfirmed:true },
+        placedAt:new Date(now-350000).toISOString(), delayFlag:false, notifiedAlmost:false },
     ];
   };
 
+  // ── Load: merge shared (localStorage) + local (sessionStorage) into _s ──
   const load = () => {
     try {
-      const saved = sessionStorage.getItem(KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // Mutate _s IN PLACE so the Proxy target stays valid
-        Object.assign(_s, defaults, parsed);
-      }
+      const sh = localStorage.getItem(SHARED_KEY);
+      if (sh) Object.assign(_s, JSON.parse(sh));
+    } catch(e) {}
+    try {
+      const lo = sessionStorage.getItem(LOCAL_KEY);
+      if (lo) Object.assign(_s, JSON.parse(lo));
     } catch(e) {}
     seedLive();
   };
 
-  const save = () => {
-    try { sessionStorage.setItem(KEY, JSON.stringify(_s)); } catch(e) {}
+  // ── Save: split writes to correct storage ──
+  const SHARED_KEYS = ['orders','reservations','notifications','smsLog','liveOrders','guestCounter'];
+  const LOCAL_KEYS  = ['role','currentUser','cart','points'];
+
+  const saveShared = () => {
+    try {
+      const obj = {};
+      SHARED_KEYS.forEach(k => { obj[k] = _s[k]; });
+      localStorage.setItem(SHARED_KEY, JSON.stringify(obj));
+      // Notify all other tabs instantly
+      try { _channel.postMessage({ type:'ORDER_UPDATE', ts: Date.now() }); } catch(e) {}
+    } catch(e) {}
   };
+
+  const saveLocal = () => {
+    try {
+      const obj = {};
+      LOCAL_KEYS.forEach(k => { obj[k] = _s[k]; });
+      sessionStorage.setItem(LOCAL_KEY, JSON.stringify(obj));
+    } catch(e) {}
+  };
+
+  // ── BroadcastChannel: push updates to staff tab instantly ──
+  const _channel = (() => {
+    try { return new BroadcastChannel('dineflow_v3'); }
+    catch(e) { return { postMessage:()=>{}, addEventListener:()=>{} }; }
+  })();
 
   load();
 
+  // ── Listen: staff tab receives customer orders in real time ──
+  const _onSharedUpdate = () => {
+    try {
+      const fresh = JSON.parse(localStorage.getItem(SHARED_KEY) || '{}');
+      // Only update shared keys — never touch this tab's role/session
+      SHARED_KEYS.forEach(k => { if (fresh[k] !== undefined) _s[k] = fresh[k]; });
+    } catch(e) {}
+    // If this tab is a staff session with admin view open → re-render immediately
+    if (_s.role === 'staff') {
+      const adminEl = document.getElementById('view-admin');
+      if (adminEl?.classList.contains('active') && typeof Staff !== 'undefined') {
+        Staff.renderApprovals();
+        if (Staff.activeTab === 'orders')    Staff.renderAllOrders();
+        if (Staff.activeTab === 'reservtab') Staff.renderAllReservations();
+        if (Staff.activeTab === 'sms')       Staff.renderSMS();
+        if (Staff.activeTab === 'notifs')    Staff.renderNotifs();
+        // Update badges
+        const pCount = (_s.orders||[]).filter(o=>o.approval==='pending').length;
+        const apB = document.getElementById('ap-badge');
+        if (apB) { apB.textContent=pCount; apB.style.display=pCount>0?'inline-flex':'none'; }
+        const unread = (_s.notifications||[]).filter(n=>!n.read).length;
+        const nb = document.getElementById('notif-bell-count');
+        if (nb) { nb.textContent=unread; nb.style.display=unread>0?'inline-flex':'none'; }
+        // Flash "New Order" alert banner
+        const latest = (_s.orders||[])[0];
+        if (latest && latest.approval==='pending') {
+          const existing = document.getElementById('new-order-flash');
+          if (!existing) {
+            const flash = document.createElement('div');
+            flash.id = 'new-order-flash';
+            flash.style.cssText = 'position:fixed;top:70px;right:20px;z-index:400;background:var(--accent);color:#fff;padding:12px 18px;border-radius:12px;font-size:13px;font-weight:600;font-family:"DM Sans",sans-serif;box-shadow:0 8px 24px rgba(249,115,22,.4);animation:slideIn .3s ease;cursor:pointer';
+            flash.innerHTML = '🔔 New order from ' + latest.customer + ' — J$' + latest.total.toLocaleString() + ' <span style="opacity:.7;font-size:11px">tap to view</span>';
+            flash.onclick = () => { flash.remove(); if(typeof Staff!=='undefined'){Staff.showTab('approvals',document.querySelector('[data-tab="approvals"]'));} };
+            document.body.appendChild(flash);
+            setTimeout(() => flash?.remove(), 8000);
+          }
+        }
+      }
+    }
+  };
+
+  _channel.addEventListener('message', ev => {
+    if (ev.data?.type === 'ORDER_UPDATE') _onSharedUpdate();
+  });
+
+  // Fallback: storage event (fires in OTHER tabs when localStorage changes)
+  window.addEventListener('storage', ev => {
+    if (ev.key === SHARED_KEY) _onSharedUpdate();
+  });
+
+  // ── Proxy: intercept all property sets ──
   return new Proxy(_s, {
     set(target, prop, val) {
       target[prop] = val;
-      save();
+      if (SHARED_KEYS.includes(prop)) saveShared();
+      else if (LOCAL_KEYS.includes(prop)) saveLocal();
       return true;
     },
     get(target, prop) { return target[prop]; }
   });
 })();
+
 
 /* ═══════════════════════════════════
    NAVIGATION HISTORY
@@ -1190,12 +1275,18 @@ const Cart = {
     const mob = document.getElementById('mo-badge');
     if (mob) { mob.style.display='inline-flex'; mob.textContent='!'; }
 
-    // Update staff approval badge
+    // Update staff approval badge immediately (same-tab staff + other tabs via storage event)
     const apBadge = document.getElementById('ap-badge');
     if (apBadge) {
       const pCount = (State.orders||[]).filter(o=>o.approval==='pending').length;
       apBadge.textContent=pCount; apBadge.style.display=pCount>0?'inline-flex':'none';
     }
+    // If staff dashboard is open in THIS tab, refresh immediately
+    if (State.role==='staff') {
+      if (Staff.activeTab==='approvals') Staff.renderApprovals();
+      if (Staff.activeTab==='orders')    Staff.renderAllOrders();
+    }
+    DineLog.info('Order broadcast to all tabs', {orderId, channel:'localStorage+BroadcastChannel'});
 
     App.go('confirm');
     Confirmation.show(newOrder);
@@ -2044,17 +2135,37 @@ const Poller = {
   start() {
     if (this._interval) return;
     this._interval = setInterval(() => {
-      // Auto-refresh staff approvals if admin view is active
+      // Re-sync from localStorage on every tick (catches missed cross-tab updates)
+      try {
+        const raw = localStorage.getItem('df_shared_v3');
+        if (raw) {
+          const fresh = JSON.parse(raw);
+          const myRole = State.role;
+          const myUser = State.currentUser;
+          // Only sync shared data (orders, reservations, notifications, smsLog, liveOrders)
+          ['orders','reservations','notifications','smsLog','liveOrders','guestCounter'].forEach(k => {
+            if (fresh[k] !== undefined) State[k] = fresh[k];
+          });
+        }
+      } catch(e) {}
+
+      // Auto-refresh staff views if admin dashboard is active
       if (State.role==='staff' && document.getElementById('view-admin')?.classList.contains('active')) {
         if (Staff.activeTab==='approvals') Staff.renderApprovals();
         if (Staff.activeTab==='orders')    Staff.renderAllOrders();
         if (Staff.activeTab==='reservtab') Staff.renderAllReservations();
+        if (Staff.activeTab==='sms')       Staff.renderSMS();
+        if (Staff.activeTab==='notifs')    Staff.renderNotifs();
+        // Refresh unread badge
+        const unread = (State.notifications||[]).filter(n=>!n.read).length;
+        const bell = document.getElementById('notif-bell-count');
+        if (bell) { bell.textContent=unread; bell.style.display=unread>0?'inline-flex':'none'; }
       }
       // Auto-refresh customer "My Orders" if open
       if (document.getElementById('view-myorders')?.classList.contains('active')) {
         MyOrders.render();
       }
-    }, 3000);
+    }, 2000);
     DineLog.info('Real-time polling started (3s interval)');
   },
   stop() { clearInterval(this._interval); this._interval=null; }
@@ -2228,9 +2339,22 @@ const Reservations = {
     Tracker._ticker = setInterval(()=>Tracker._tick(), 1000);
   }
 
+  // On init: if staff — immediately sync shared data from localStorage
+  if (State.role === 'staff') {
+    try {
+      const raw = localStorage.getItem('df_shared_v3');
+      if (raw) {
+        const fresh = JSON.parse(raw);
+        ['orders','reservations','notifications','smsLog','liveOrders','guestCounter'].forEach(k => {
+          if (fresh[k] !== undefined) State[k] = fresh[k];
+        });
+      }
+    } catch(e) {}
+  }
+
   Nav._update();
   Poller.start();
-  DineLog.info('DineFlow initialised', {version:'3.0', role:State.role||'none', orders:(State.orders||[]).length});
+  DineLog.info('DineFlow initialised', {version:'3.1', role:State.role||'none', orders:(State.orders||[]).length, storage:'split-localStorage+sessionStorage'});
 })();
 </script>
 </body>
