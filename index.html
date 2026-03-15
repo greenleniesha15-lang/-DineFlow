@@ -1807,12 +1807,41 @@ const Staff = {
     const o=(State.orders||[]).find(x=>x.id===orderId); if(!o) return;
     o.approval='approved'; o.status='confirmed';
     State.orders=[...State.orders];
-    Toast.show('✅ '+orderId+' approved!','success');
-    DineLog.info('Order approved: '+orderId, {staff:'staff', guestNum:o.guestNum});
-    Notify.send('✅ Approved: '+orderId,'Guest #'+(o.guestNum||'?')+' '+o.customer+'\nJ$'+o.total.toLocaleString(),'order');
-    if (o.phone) SMS.send(o.phone,'✅ Hi '+o.customer+'! Your order '+orderId+' has been approved and is being prepared. Est. '+o.estMins+' mins.');
-    // Add to live kitchen orders
+
+    // ── Add to live kitchen queue ──
     this._addToKitchen(o);
+
+    // ── Start countdown ticker immediately ──
+    if (!Tracker._ticker) {
+      Tracker._ticker = setInterval(() => Tracker._tick(), 1000);
+    }
+
+    // ── Switch to Kitchen tab so staff sees the order immediately ──
+    const kitchenBtn = document.querySelector('[data-tab="kitchen"]');
+    if (kitchenBtn) this.showTab('kitchen', kitchenBtn);
+
+    // ── Show a "Sent to Kitchen" confirmation banner ──
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:500;background:var(--green);color:#fff;padding:14px 24px;border-radius:14px;font-size:14px;font-weight:600;font-family:"DM Sans",sans-serif;box-shadow:0 8px 28px rgba(34,197,94,.5);display:flex;align-items:center;gap:10px;animation:slideIn .3s ease;white-space:nowrap';
+    banner.innerHTML = '🔥 Order '+orderId+' sent to Kitchen! Guest #'+(o.guestNum||'?')+' — '+o.customer;
+    document.body.appendChild(banner);
+    setTimeout(() => banner?.remove(), 4000);
+
+    // ── Notify + SMS ──
+    Toast.show('🔥 '+orderId+' sent to kitchen!', 'success');
+    DineLog.info('Order approved + sent to kitchen: '+orderId, {guestNum:o.guestNum, estMins:o.estMins});
+    Notify.send('🔥 Kitchen: '+orderId, 'Guest #'+(o.guestNum||'?')+' '+o.customer+' | J$'+o.total.toLocaleString()+' | '+o.items.map(i=>i.qty+'× '+i.name).join(', '), 'order');
+    if (o.phone) SMS.send(o.phone, '🔥 Hi '+o.customer+'! Order '+orderId+' approved. Kitchen is preparing your food now. Est. '+o.estMins+' mins.');
+
+    // ── Notify customer chat ──
+    const sysMsg = {
+      id:'MSG-'+Date.now(), guestNum:o.guestNum, guestName:o.customer,
+      customerId:o.customerId, orderId:orderId, from:'staff',
+      text:'✅ Your order '+orderId+' has been approved and is now being prepared in the kitchen! Estimated time: '+o.estMins+' minutes.',
+      ts:new Date().toISOString(), read:true, readByCustomer:false
+    };
+    State.messages = [sysMsg, ...(State.messages||[])];
+
     this.renderApprovals();
   },
 
@@ -1828,10 +1857,27 @@ const Staff = {
 
   approveAll() {
     const pending=(State.orders||[]).filter(o=>o.approval==='pending');
-    pending.forEach(o=>{ o.approval='approved'; o.status='confirmed'; this._addToKitchen(o); });
+    if (pending.length===0) return;
+    pending.forEach(o=>{
+      o.approval='approved'; o.status='confirmed';
+      this._addToKitchen(o);
+      // Auto-message each customer
+      const sysMsg = {
+        id:'MSG-'+Date.now()+'-'+o.id, guestNum:o.guestNum, guestName:o.customer,
+        customerId:o.customerId, orderId:o.id, from:'staff',
+        text:'✅ Your order '+o.id+' has been approved and sent to the kitchen! Est. '+o.estMins+' mins.',
+        ts:new Date().toISOString(), read:true, readByCustomer:false
+      };
+      State.messages = [sysMsg, ...(State.messages||[])];
+      if (o.phone) SMS.send(o.phone, '🔥 Hi '+o.customer+'! Order '+o.id+' approved. Kitchen is on it! Est. '+o.estMins+' mins.');
+    });
     State.orders=[...State.orders];
-    Toast.show('✅ '+pending.length+' orders approved!','success');
-    Notify.send('✅ Bulk Approve',pending.length+' orders at '+new Date().toLocaleString(),'order');
+    if (!Tracker._ticker) Tracker._ticker=setInterval(()=>Tracker._tick(),1000);
+    Toast.show('🔥 '+pending.length+' orders sent to kitchen!','success');
+    Notify.send('🔥 Bulk Approve: '+pending.length+' orders', pending.map(o=>o.id+' ('+o.customer+')').join(', '),'order');
+    // Switch to kitchen tab
+    const kitchenBtn = document.querySelector('[data-tab="kitchen"]');
+    if (kitchenBtn) this.showTab('kitchen', kitchenBtn);
     this.renderApprovals();
   },
 
@@ -1868,8 +1914,12 @@ const Staff = {
       const urg=urgClass(o);
       return `<div class="k-card ${urg}">
         <div class="k-head ${urg}">
-          <div><div class="k-table">Guest #${o.guestNum} · ${o.tableNo}</div>
-          <div class="k-order-id">${o.id} · ${o.restaurant}</div></div>
+          <div style="flex:1">
+            <div class="k-table">Guest #${o.guestNum} · ${o.tableNo}
+              ${(Date.now()-new Date(o.placedAt).getTime()) < 30000 ? '<span style="background:var(--green);color:#fff;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700;margin-left:6px;animation:pulse 1.4s infinite">NEW</span>' : ''}
+            </div>
+            <div class="k-order-id">${o.id} · ${o.restaurant}</div>
+          </div>
           <div class="k-elapsed ${urg}">${o.stage==='ready'?'✓':fmtTime(o.remainingSecs)}</div>
         </div>
         <div class="k-body">
