@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DineFlow — Smart Dining</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     NAV
+════════════════════════════════════════════ -->
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <div class="nav-brand">
+      <div class="logo-mark">DF</div>
+      <span class="nav-name">DineFlow</span>
+    </div>
+    <div class="nav-links">
+      <button class="nav-link active" data-view="home">Home</button>
+      <button class="nav-link" data-view="restaurants">Restaurants</button>
+      <button class="nav-link" data-view="orders">My Orders</button>
+      <button class="nav-link" data-view="loyalty">Rewards</button>
+    </div>
+    <div class="nav-user">
+      <div class="points-pill" id="nav-points">⭐ 0 pts</div>
+      <div class="avatar" id="nav-avatar">JD</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════
+     VIEW: HOME
+════════════════════════════════════════════ -->
+<div class="view active" id="view-home">
+  <section class="hero-section">
+    <div class="hero-content">
+      <div class="hero-badge">🍽 Powered by DineFlow</div>
+      <h1 class="hero-title">Reserve. Order.<br><span>Track. Earn.</span></h1>
+      <p class="hero-sub">One platform for every dining moment. Book tables, order food, watch it arrive in real-time, and earn rewards with every bite.</p>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="App.goTo('restaurants')">Browse Restaurants</button>
+        <button class="btn-ghost" onclick="App.goTo('orders')">Track My Order</button>
+      </div>
+    </div>
+    <div class="hero-card-float">
+      <div class="float-card">
+        <div class="float-card-header">
+          <span class="float-rest">Sakura Japanese</span>
+          <span class="float-status live">● LIVE</span>
+        </div>
+        <div class="float-track">
+          <div class="track-step done">✓ Order placed</div>
+          <div class="track-step done">✓ Confirmed</div>
+          <div class="track-step active">🔥 Preparing</div>
+          <div class="track-step">🛵 On the way</div>
+          <div class="track-step">🎉 Delivered</div>
+        </div>
+        <div class="float-eta">Est. arrival: <strong>12 min</strong></div>
+        <div class="float-progress">
+          <div class="float-progress-bar" style="width:58%"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features-section">
+    <h2 class="section-title">Everything in one place</h2>
+    <div class="features-grid">
+      <div class="feature-card" onclick="App.goTo('restaurants')">
+        <div class="feat-icon">📅</div>
+        <h3>Reserve a Table</h3>
+        <p>Pick your restaurant, choose a date & time, select party size — confirmed in seconds.</p>
+        <span class="feat-link">Book now →</span>
+      </div>
+      <div class="feature-card" onclick="App.goTo('restaurants')">
+        <div class="feat-icon">🛒</div>
+        <h3>Order Food</h3>
+        <p>Browse menus, build your cart, pay securely. Single or split payments across the table.</p>
+        <span class="feat-link">Order now →</span>
+      </div>
+      <div class="feature-card" onclick="App.goTo('orders')">
+        <div class="feat-icon">📡</div>
+        <h3>Live Tracking</h3>
+        <p>Watch your order move through every stage — kitchen, prep, dispatch — with live ETA.</p>
+        <span class="feat-link">Track orders →</span>
+      </div>
+      <div class="feature-card" onclick="App.goTo('loyalty')">
+        <div class="feat-icon">🎯</div>
+        <h3>Earn Rewards</h3>
+        <p>Every order earns points. Redeem for discounts, free dishes, and VIP perks.</p>
+        <span class="feat-link">View rewards →</span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     VIEW: RESTAURANTS
+════════════════════════════════════════════ -->
+<div class="view" id="view-restaurants">
+  <div class="page-header">
+    <h2>Restaurants</h2>
+    <div class="filter-tabs" id="filter-tabs">
+      <button class="filter-tab active" data-filter="all">All</button>
+      <button class="filter-tab" data-filter="japanese">Japanese</button>
+      <button class="filter-tab" data-filter="italian">Italian</button>
+      <button class="filter-tab" data-filter="caribbean">Caribbean</button>
+      <button class="filter-tab" data-filter="burgers">Burgers</button>
+    </div>
+  </div>
+  <div class="restaurant-grid" id="restaurant-grid"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     VIEW: RESTAURANT DETAIL (menu + reserve)
+════════════════════════════════════════════ -->
+<div class="view" id="view-detail">
+  <button class="back-btn" onclick="App.goTo('restaurants')">← Back</button>
+  <div id="detail-content"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     VIEW: MY ORDERS
+════════════════════════════════════════════ -->
+<div class="view" id="view-orders">
+  <div class="page-header">
+    <h2>My Orders</h2>
+  </div>
+  <div id="orders-content"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     VIEW: LOYALTY
+════════════════════════════════════════════ -->
+<div class="view" id="view-loyalty">
+  <div class="page-header">
+    <h2>My Rewards</h2>
+  </div>
+  <div id="loyalty-content"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     CART DRAWER
+════════════════════════════════════════════ -->
+<div class="cart-overlay" id="cart-overlay" onclick="Cart.close()"></div>
+<div class="cart-drawer" id="cart-drawer">
+  <div class="cart-header">
+    <h3>Your Cart</h3>
+    <button class="cart-close" onclick="Cart.close()">✕</button>
+  </div>
+  <div class="cart-items" id="cart-items"></div>
+  <div class="cart-upsell" id="cart-upsell"></div>
+  <div class="cart-footer" id="cart-footer"></div>
+</div>
+<button class="cart-fab" id="cart-fab" onclick="Cart.open()" style="display:none">
+  🛒 <span id="cart-count">0</span>
+</button>
+
+<!-- ═══════════════════════════════════════════
+     RESERVATION MODAL
+════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-overlay" onclick="Modal.close()"></div>
+<div class="modal" id="modal">
+  <div class="modal-header">
+    <h3 id="modal-title">Reserve a Table</h3>
+    <button class="modal-close" onclick="Modal.close()">✕</button>
+  </div>
+  <div class="modal-body" id="modal-body"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TOAST
+════════════════════════════════════════════ -->
+<div class="toast-container" id="toast-container"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
