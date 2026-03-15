@@ -346,6 +346,12 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   .detail-hero{flex-direction:column}
   .stats-row{grid-template-columns:1fr 1fr}
 }
+
+/* PROFILE DROPDOWN */
+.dropdown-item{display:block;width:100%;text-align:left;background:none;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .15s;white-space:nowrap}
+.dropdown-item:hover{background:var(--surface2)}
+#profile-dropdown{animation:fadeIn .15s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
@@ -403,17 +409,14 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
     </div>
     <div class="error-msg" id="staff-error"></div>
     <button class="btn-primary" onclick="Auth.submitStaff()">Sign In as Staff</button>
-    <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:12px">🔔 All notifications sent to <strong style="color:var(--purple)">greenleniesha@yahoo.com</strong></p>
+    <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:12px">🔔 All notifications sent to <strong style="color:var(--purple)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="284f5a4d4d46444d46414d5b4049685149404747064b4745">[email&#160;protected]</a></strong></p>
   </div>
 </div>
 
 <!-- ═══════════ NAV ═══════════ -->
 <nav class="nav" id="nav">
   <div class="nav-inner">
-    <button onclick="Auth.showStaffModal()" id="staff-nav-btn"
-      style="flex-shrink:0;display:flex;align-items:center;gap:5px;background:var(--staff-light);border:1px solid rgba(124,58,237,.3);color:var(--purple);padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap">
-      🛠 Staff</button>
-    <div class="nav-brand">
+    <div class="nav-brand" onclick="App.go('home')" style="cursor:pointer" title="Go Home">
       <div class="logo-mark">DF</div>
       <span class="nav-name">DineFlow</span>
     </div>
@@ -426,13 +429,36 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
       <button class="nav-link" data-view="restaurants">Restaurants</button>
       <button class="nav-link" data-view="tracker" id="tracker-link" style="display:none">📡 Track Order</button>
       <button class="nav-link" data-view="myorders" id="myorders-link" style="display:none">🧾 My Orders<span id="mo-badge" class="badge" style="display:none">!</span></button>
+      <button class="nav-link" data-view="reservations" id="reservations-link" style="display:none">📅 Reservations</button>
       <button class="nav-link" data-view="orders" style="display:none">History</button>
       <button class="nav-link" data-view="loyalty">Rewards</button>
     </div>
     <div class="nav-user">
       <div id="guest-num-pill" style="display:none" class="guest-pill"></div>
       <div class="points-pill" id="nav-pts" style="background:var(--surface2);border:1px solid var(--border);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500">⭐ 0 pts</div>
-      <div class="avatar" id="nav-avatar" title="Tap to change name" onclick="Auth.changeGuest()">👤</div>
+      <!-- Staff button top-right -->
+      <button onclick="Auth.showStaffModal()" id="staff-nav-btn"
+        style="flex-shrink:0;display:flex;align-items:center;gap:5px;background:var(--staff-light);border:1px solid rgba(124,58,237,.3);color:var(--purple);padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:all .2s"
+        onmouseover="this.style.background='rgba(124,58,237,.25)'" onmouseout="this.style.background='var(--staff-light)'">
+        🛠 Staff</button>
+      <!-- Profile dropdown avatar -->
+      <div style="position:relative" id="profile-wrap">
+        <div class="avatar" id="nav-avatar" title="Profile menu" onclick="Profile.toggle()">👤</div>
+        <div id="profile-dropdown" style="display:none;position:absolute;top:42px;right:0;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:8px;min-width:200px;z-index:300;box-shadow:0 12px 40px rgba(0,0,0,.4)">
+          <div id="profile-header" style="padding:10px 12px 10px;border-bottom:1px solid var(--border);margin-bottom:6px">
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px" id="profile-name">Guest</div>
+            <div style="font-size:11px;color:var(--muted)" id="profile-sub">Guest #—</div>
+          </div>
+          <button onclick="App.go('myorders');Profile.close()" class="dropdown-item">🧾 My Orders</button>
+          <button onclick="App.go('tracker');Profile.close()" class="dropdown-item">📡 Track Order</button>
+          <button onclick="App.go('loyalty');Profile.close()" class="dropdown-item">⭐ My Rewards</button>
+          <button onclick="App.go('reservations');Profile.close()" class="dropdown-item" id="dd-reservations" style="display:none">📅 My Reservations</button>
+          <button onclick="Profile.showNotifications()" class="dropdown-item">🔔 Notifications<span id="dd-notif-count" style="display:none;background:var(--red);color:#fff;border-radius:50%;width:16px;height:16px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-left:6px">0</span></button>
+          <button onclick="Profile.showSettings()" class="dropdown-item">⚙️ Settings</button>
+          <div style="border-top:1px solid var(--border);margin:6px 0"></div>
+          <button onclick="Auth.changeGuest();Profile.close()" class="dropdown-item" style="color:var(--red)">↩ Sign Out</button>
+        </div>
+      </div>
     </div>
   </div>
 </nav>
@@ -534,6 +560,15 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   <div id="orders-content"></div>
 </div>
 
+<!-- ═══════════ RESERVATIONS ═══════════ -->
+<div class="view" id="view-reservations">
+  <div class="page-header">
+    <h2>My Reservations</h2>
+    <button onclick="ResModal.open('Island Vibes')" style="display:flex;align-items:center;gap:6px;background:var(--accent);border:none;color:#fff;padding:8px 16px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">📅 + New Reservation</button>
+  </div>
+  <div id="reservations-content"></div>
+</div>
+
 <!-- ═══════════ LOYALTY ═══════════ -->
 <div class="view" id="view-loyalty">
   <div class="page-header"><h2>Rewards</h2></div>
@@ -550,12 +585,14 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
     <button class="admin-tab active" data-tab="approvals" onclick="Staff.showTab('approvals',this)">✅ Approvals<span id="ap-badge" class="badge" style="display:none">0</span></button>
     <button class="admin-tab" data-tab="kitchen" onclick="Staff.showTab('kitchen',this)">🔥 Kitchen</button>
     <button class="admin-tab" data-tab="orders" onclick="Staff.showTab('orders',this)">📦 All Orders</button>
+    <button class="admin-tab" data-tab="reservtab" onclick="Staff.showTab('reservtab',this)">📅 Reservations</button>
     <button class="admin-tab" data-tab="sms" onclick="Staff.showTab('sms',this)">💬 SMS Log</button>
     <button class="admin-tab" data-tab="notifs" onclick="Staff.showTab('notifs',this)">🔔 Notifications<span id="notif-bell-count" class="badge" style="display:none">0</span></button>
   </div>
   <div id="staff-approvals"></div>
   <div id="staff-kitchen" style="display:none"></div>
   <div id="staff-orders" style="display:none"></div>
+  <div id="staff-reservtab" style="display:none"></div>
   <div id="staff-sms" style="display:none"></div>
   <div id="staff-notifs" style="display:none"></div>
 </div>
@@ -579,7 +616,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 <!-- TOAST -->
 <div class="toast-wrap" id="toast-wrap"></div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 /* ═══════════════════════════════════
    CONSTANTS
 ═══════════════════════════════════ */
@@ -664,7 +701,11 @@ const State = (() => {
   const load = () => {
     try {
       const saved = sessionStorage.getItem(KEY);
-      if (saved) { _s = { ...defaults, ...JSON.parse(saved) }; }
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Mutate _s IN PLACE so the Proxy target stays valid
+        Object.assign(_s, defaults, parsed);
+      }
     } catch(e) {}
     seedLive();
   };
@@ -793,10 +834,13 @@ const Auth = {
     pill.style.display = '';
 
     // Show customer nav links
-    ['tracker-link','myorders-link'].forEach(id => {
+    ['tracker-link','myorders-link','reservations-link'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = '';
     });
+    // Show reservations in profile dropdown
+    const ddRes = document.getElementById('dd-reservations');
+    if (ddRes) ddRes.style.display = '';
     document.querySelectorAll('[data-view="orders"]').forEach(el=>el.style.display='');
 
     // Bind all nav links
@@ -852,7 +896,7 @@ const Auth = {
     const staffBtn = document.getElementById('staff-nav-btn');
     if (staffBtn){ staffBtn.textContent='✓ Staff'; staffBtn.style.cursor='default'; staffBtn.onclick=null; }
     // Remove customer links, add staff dashboard link
-    ['tracker-link','myorders-link'].forEach(id=>{
+    ['tracker-link','myorders-link','reservations-link'].forEach(id=>{
       const el=document.getElementById(id); if(el) el.style.display='none';
     });
     const navLinks = document.getElementById('nav-links');
@@ -920,12 +964,13 @@ const App = {
     if (el) el.classList.add('active');
     const btn = document.querySelector('.nav-link[data-view="'+view+'"]');
     if (btn) btn.classList.add('active');
-    if (view==='restaurants') Menu.render();
-    if (view==='orders')      OrderHistory.render();
-    if (view==='myorders')    MyOrders.render();
-    if (view==='tracker')     Tracker.render();
-    if (view==='loyalty')     Loyalty.render();
-    if (view==='admin')       Staff.render();
+    if (view==='restaurants')  Menu.render();
+    if (view==='orders')       OrderHistory.render();
+    if (view==='myorders')     MyOrders.render();
+    if (view==='tracker')      Tracker.render();
+    if (view==='loyalty')      Loyalty.render();
+    if (view==='admin')        Staff.render();
+    if (view==='reservations') Reservations.render();
     window.scrollTo({top:0,behavior:'smooth'});
   }
 };
@@ -953,7 +998,9 @@ const Menu = {
     let html = `<div class="detail-hero"><div class="detail-emoji">${r.emoji}</div>
       <div><h2>${r.name}</h2>
       <div class="rest-meta" style="margin:6px 0 12px"><span>⭐ ${r.rating}</span><span>🕐 ${r.time} min</span></div>
-      <p style="color:var(--muted);font-size:13px">${r.desc}</p></div></div>`;
+      <p style="color:var(--muted);font-size:13px;margin-bottom:14px">${r.desc}</p>
+      <button onclick="ResModal.open('${r.name}')" style="display:inline-flex;align-items:center;gap:7px;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 16px;border-radius:9px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">📅 Reserve a Table</button>
+      </div></div>`;
 
     r.menuSections.forEach(sec => {
       html += '<h3 class="menu-section-heading">'+sec.heading+'</h3><div class="menu-grid">';
@@ -1124,6 +1171,7 @@ const Cart = {
     };
 
     State.orders = [newOrder, ...orders];
+    DineLog.info('Order saved: '+orderId, {customer:u.name, guestNum:u.guestNum, items:newOrder.items.length, total});
     State.points = (State.points||0) + newOrder.points;
     State.cart = [];
     this.updateFAB();
@@ -1532,15 +1580,16 @@ const Staff = {
         b.classList.toggle('active', b.dataset.tab===tab);
       });
     }
-    ['approvals','kitchen','orders','sms','notifs'].forEach(t=>{
+    ['approvals','kitchen','orders','reservtab','sms','notifs'].forEach(t=>{
       const el=document.getElementById('staff-'+t);
       if(el) el.style.display=t===tab?'block':'none';
     });
-    if (tab==='approvals') this.renderApprovals();
-    if (tab==='kitchen')   this.renderKitchen();
-    if (tab==='orders')    this.renderAllOrders();
-    if (tab==='sms')       this.renderSMS();
-    if (tab==='notifs')    this.renderNotifs();
+    if (tab==='approvals')  this.renderApprovals();
+    if (tab==='kitchen')    this.renderKitchen();
+    if (tab==='orders')     this.renderAllOrders();
+    if (tab==='reservtab')  this.renderAllReservations();
+    if (tab==='sms')        this.renderSMS();
+    if (tab==='notifs')     this.renderNotifs();
   },
 
   renderApprovals() {
@@ -1586,6 +1635,7 @@ const Staff = {
     o.approval='approved'; o.status='confirmed';
     State.orders=[...State.orders];
     Toast.show('✅ '+orderId+' approved!','success');
+    DineLog.info('Order approved: '+orderId, {staff:'staff', guestNum:o.guestNum});
     Notify.send('✅ Approved: '+orderId,'Guest #'+(o.guestNum||'?')+' '+o.customer+'\nJ$'+o.total.toLocaleString(),'order');
     if (o.phone) SMS.send(o.phone,'✅ Hi '+o.customer+'! Your order '+orderId+' has been approved and is being prepared. Est. '+o.estMins+' mins.');
     // Add to live kitchen orders
@@ -1766,6 +1816,49 @@ const Staff = {
       }).join('')}`;
   },
 
+  renderAllReservations() {
+    const el = document.getElementById('staff-reservtab');
+    const all = State.reservations || [];
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+        <div><h3 style="font-size:17px">📅 All Reservations</h3>
+        <p style="color:var(--muted);font-size:12px;margin-top:3px">${all.length} total</p></div>
+      </div>
+      ${all.length===0?'<div style="text-align:center;padding:48px;color:var(--muted)"><div style="font-size:40px;margin-bottom:10px">📅</div><p>No reservations yet.</p></div>':''}
+      ${all.map(r=>`
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+            <div>
+              <div style="font-size:11px;color:var(--muted)">${r.id}</div>
+              <div style="font-weight:600;font-size:15px">${r.customer}${r.guestNum?' <span style=\"color:var(--accent);font-size:12px\">(Guest #'+r.guestNum+')</span>':''}</div>
+              <div style="font-size:13px;color:var(--muted)">${r.restaurant}</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <select onchange="Staff.updateResStatus('${r.id}',this.value)"
+                style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:7px;font-size:12px;font-family:'DM Sans',sans-serif">
+                <option ${r.status==='confirmed'?'selected':''}>confirmed</option>
+                <option ${r.status==='seated'?'selected':''}>seated</option>
+                <option ${r.status==='cancelled'?'selected':''}>cancelled</option>
+              </select>
+              <span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(34,197,94,.1);color:var(--green)">${r.status||'confirmed'}</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted)">
+            <span>📅 ${r.date}</span><span>🕐 ${r.time}</span><span>👥 ${r.party} guests</span>
+            ${r.phone?'<span>📱 '+r.phone+'</span>':''}
+            ${r.email?'<span>✉️ '+r.email+'</span>':''}
+          </div>
+          ${r.notes?'<div style="margin-top:8px;padding:8px 10px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--muted)">📝 '+r.notes+'</div>':''}
+        </div>`).join('')}`;
+  },
+
+  updateResStatus(resId, status) {
+    const res = (State.reservations||[]).find(r=>r.id===resId);
+    if (res) { res.status = status; State.reservations=[...State.reservations]; }
+    Toast.show('📅 Reservation '+resId+' → '+status,'info');
+    this.renderAllReservations();
+  },
+
   renderSMS() {
     const el=document.getElementById('staff-sms');
     const log=State.smsLog||[];
@@ -1851,35 +1944,266 @@ const Loyalty={
 ═══════════════════════════════════ */
 const ResModal={
   open(restName){
+    const u = State.currentUser || {};
     document.getElementById('res-modal-title').textContent='Reserve at '+restName;
     const today=new Date().toISOString().split('T')[0];
     document.getElementById('res-modal-body').innerHTML=`
-      <div class="form-group"><label class="form-label">Party size</label>
+      <div class="form-group"><label class="form-label">Number of Guests</label>
         <div style="display:flex;gap:6px;flex-wrap:wrap" id="party-sel">
-          ${[1,2,3,4,5,6,7,8].map(n=>`<button class="k-btn ${n===2?'primary':''}" style="width:38px" onclick="ResModal.setParty(${n})">${n}</button>`).join('')}
-        </div></div>
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Date</label><input type="date" class="form-input" id="res-date" value="${today}" min="${today}"/></div>
-        <div class="form-group"><label class="form-label">Time</label>
-          <select class="form-select" id="res-time">${['12:00 PM','12:30 PM','1:00 PM','6:00 PM','6:30 PM','7:00 PM','7:30 PM','8:00 PM'].map(t=>'<option>'+t+'</option>').join('')}</select>
+          ${[1,2,3,4,5,6,7,8].map(n=>'<button class="k-btn '+(n===2?'primary':'')+'" style="width:38px;height:38px" onclick="ResModal.setParty('+n+')">'+n+'</button>').join('')}
         </div>
       </div>
-      <button class="btn-primary" onclick="ResModal.confirm('${restName}')">Confirm Reservation</button>`;
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Date</label>
+          <input type="date" class="form-input" id="res-date" value="${today}" min="${today}"/>
+        </div>
+        <div class="form-group"><label class="form-label">Preferred Time</label>
+          <select class="form-select" id="res-time">
+            ${['11:00 AM','11:30 AM','12:00 PM','12:30 PM','1:00 PM','1:30 PM','5:00 PM','5:30 PM','6:00 PM','6:30 PM','7:00 PM','7:30 PM','8:00 PM','8:30 PM'].map(t=>'<option>'+t+'</option>').join('')}
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input type="tel" class="form-input" id="res-phone" placeholder="+1 876 555 0100" value="${u.phone||''}"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email (optional)</label>
+          <input type="email" class="form-input" id="res-email" placeholder="you@email.com"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Special Requests <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+        <input type="text" class="form-input" id="res-notes" placeholder="Allergies, celebrations, seating preference..."/>
+      </div>
+      <div id="res-error" style="display:none;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--red);padding:10px;border-radius:9px;font-size:13px;margin-bottom:12px"></div>
+      <button class="btn-primary" onclick="ResModal.confirm('${restName}')">📅 Confirm Reservation</button>`;
     document.getElementById('res-modal').classList.add('open');
     document.getElementById('res-backdrop').classList.add('open');
   },
   close(){document.getElementById('res-modal').classList.remove('open');document.getElementById('res-backdrop').classList.remove('open');},
   setParty(n){document.querySelectorAll('#party-sel button').forEach((b,i)=>b.classList.toggle('primary',i===n-1));},
   confirm(rest){
-    const date=document.getElementById('res-date')?.value||'';
-    const time=document.getElementById('res-time')?.value||'';
-    const u=State.currentUser||{name:'Guest'};
-    const id='RES-'+Date.now().toString().slice(-4);
-    State.reservations=[{id,restaurant:rest,customer:u.name,date,time,party:2,status:'confirmed'},...(State.reservations||[])];
+    const date   = document.getElementById('res-date')?.value||'';
+    const time   = document.getElementById('res-time')?.value||'';
+    const phone  = document.getElementById('res-phone')?.value.trim()||'';
+    const email  = document.getElementById('res-email')?.value.trim()||'';
+    const notes  = document.getElementById('res-notes')?.value.trim()||'';
+    const errEl  = document.getElementById('res-error');
+    const partyBtn = document.querySelector('#party-sel button.primary');
+    const party  = partyBtn ? parseInt(partyBtn.textContent)||2 : 2;
+    const u      = State.currentUser||{name:'Guest',id:'guest'};
+    if (!date) { if(errEl){errEl.textContent='Please select a date.';errEl.style.display='block';} return; }
+    const id = 'RES-'+String((State.reservations||[]).length+1).padStart(3,'0');
+    const newRes = {
+      id, restaurant:rest, customer:u.name, customerId:u.id,
+      guestNum:u.guestNum||null, date, time, party, phone, email, notes,
+      status:'confirmed', createdAt:new Date().toISOString()
+    };
+    State.reservations = [newRes, ...(State.reservations||[])];
+    DineLog.info('Reservation saved: '+id, {customer:u.name, restaurant:rest, date, time, party, phone});
+    const smsNum = phone || u.phone;
+    if (smsNum) SMS.send(smsNum, 'Hi '+u.name+'! Your table at '+rest+' is confirmed for '+party+' guests on '+date+' at '+time+'. Ref: '+id+'.');
+    const nb = 'Guest: '+u.name+(u.guestNum?' (#'+u.guestNum+')':'')+(phone?' | Phone: '+phone:'')+(email?' | Email: '+email:'')+' | Restaurant: '+rest+' | Date: '+date+' '+time+' | Party: '+party+(notes?' | Notes: '+notes:'');
+    Notify.send('📅 New Reservation: '+id, nb, 'reservation');
     this.close();
-    Toast.show('📅 Table booked at '+rest+' for '+date,'success');
+    Toast.show('📅 Table reserved at '+rest+' for '+party+' guests — '+date+' at '+time,'success');
+    App.go('reservations');
   }
 };
+
+/* ═══════════════════════════════════
+   SYSTEM LOGGER
+═══════════════════════════════════ */
+const DineLog = {
+  _log: [],
+  info(msg, data) {
+    const entry = {level:'info', msg, data:data||{}, ts:new Date().toISOString()};
+    this._log.unshift(entry);
+    console.log('[DineFlow INFO]', msg, data||'');
+  },
+  error(msg, err) {
+    const entry = {level:'error', msg, err:err?.message||String(err||''), ts:new Date().toISOString()};
+    this._log.unshift(entry);
+    console.error('[DineFlow ERROR]', msg, err||'');
+    Notify.send('🚨 System Error: '+msg, entry.err, 'info');
+  },
+  warn(msg, data) {
+    console.warn('[DineFlow WARN]', msg, data||'');
+  },
+  getLog() { return this._log.slice(0,50); }
+};
+
+/* ═══════════════════════════════════
+   REAL-TIME POLLING
+   Refreshes staff dashboard every 3s if open
+═══════════════════════════════════ */
+const Poller = {
+  _interval: null,
+  start() {
+    if (this._interval) return;
+    this._interval = setInterval(() => {
+      // Auto-refresh staff approvals if admin view is active
+      if (State.role==='staff' && document.getElementById('view-admin')?.classList.contains('active')) {
+        if (Staff.activeTab==='approvals') Staff.renderApprovals();
+        if (Staff.activeTab==='orders')    Staff.renderAllOrders();
+        if (Staff.activeTab==='reservtab') Staff.renderAllReservations();
+      }
+      // Auto-refresh customer "My Orders" if open
+      if (document.getElementById('view-myorders')?.classList.contains('active')) {
+        MyOrders.render();
+      }
+    }, 3000);
+    DineLog.info('Real-time polling started (3s interval)');
+  },
+  stop() { clearInterval(this._interval); this._interval=null; }
+};
+
+/* ═══════════════════════════════════
+   PROFILE DROPDOWN
+═══════════════════════════════════ */
+const Profile = {
+  toggle() {
+    const dd = document.getElementById('profile-dropdown');
+    if (!dd) return;
+    const isOpen = dd.style.display !== 'none';
+    if (isOpen) { this.close(); } else { this.open(); }
+  },
+  open() {
+    const dd = document.getElementById('profile-dropdown');
+    if (!dd) return;
+    dd.style.display = 'block';
+    const u = State.currentUser;
+    if (u) {
+      const name = document.getElementById('profile-name');
+      const sub  = document.getElementById('profile-sub');
+      if (name) name.textContent = u.name || 'Guest';
+      if (sub)  sub.textContent  = u.guestNum ? 'Guest #'+u.guestNum+(u.phone?' · '+u.phone:'') : (u.role==='staff'?'Staff Account':'');
+    }
+    // Close when clicking outside
+    setTimeout(() => document.addEventListener('click', Profile._outside, {once:true}), 10);
+  },
+  close() {
+    const dd = document.getElementById('profile-dropdown');
+    if (dd) dd.style.display = 'none';
+  },
+  _outside(e) {
+    const wrap = document.getElementById('profile-wrap');
+    if (wrap && !wrap.contains(e.target)) Profile.close();
+  },
+
+  showNotifications() {
+    this.close();
+    // Show notification panel as toast list or navigate to my orders
+    const notifs = (State.notifications||[]).slice(0,10);
+    if (notifs.length===0) { Toast.show('📭 No new notifications','info'); return; }
+    // Flash recent notifications
+    notifs.slice(0,3).forEach((n,i) => {
+      setTimeout(() => Toast.show(n.subject, 'info'), i*400);
+    });
+    Notify.markRead();
+    // Update badge
+    const cnt = document.getElementById('dd-notif-count');
+    if (cnt) cnt.style.display='none';
+  },
+
+  showSettings() {
+    this.close();
+    // Show settings modal
+    const dd = document.createElement('div');
+    dd.style.cssText='position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px';
+    dd.innerHTML=`
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:28px;width:380px;max-width:100%">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <h3 style="font-size:17px">⚙️ Settings</h3>
+          <button onclick="this.closest('div[style]').remove()" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);width:28px;height:28px;border-radius:7px;cursor:pointer;font-size:13px">✕</button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Display Name</label>
+          <input type="text" class="form-input" id="set-name" value="${State.currentUser?.name||''}" placeholder="Your name"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input type="tel" class="form-input" id="set-phone" value="${State.currentUser?.phone||''}" placeholder="+1 876 555 0100"/>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:1px solid var(--border);margin-top:4px">
+          <span style="font-size:13px">Order notifications</span>
+          <button onclick="Tracker.toggleNotif();this.textContent=State.currentUser?.notifEnabled!==false?'On ✅':'Off 🔕'" 
+            style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 14px;border-radius:20px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif">
+            ${State.currentUser?.notifEnabled!==false?'On ✅':'Off 🔕'}
+          </button>
+        </div>
+        <button class="btn-primary" style="margin-top:16px" onclick="
+          const n=document.getElementById('set-name')?.value.trim();
+          const p=document.getElementById('set-phone')?.value.trim();
+          if(n&&State.currentUser){State.currentUser={...State.currentUser,name:n,phone:p||State.currentUser.phone};document.getElementById('nav-avatar').textContent=n.slice(0,2).toUpperCase();}
+          Toast.show('✅ Settings saved','success');
+          this.closest('div[style]').remove();">Save Settings</button>
+      </div>`;
+    document.body.appendChild(dd);
+  },
+
+  updateNotifBadge() {
+    const unread = (State.notifications||[]).filter(n=>!n.read).length;
+    const cnt = document.getElementById('dd-notif-count');
+    if (cnt) { cnt.textContent=unread; cnt.style.display=unread>0?'inline-flex':'none'; }
+  }
+};
+
+/* ═══════════════════════════════════
+   RESERVATIONS (customer)
+═══════════════════════════════════ */
+const Reservations = {
+  render() {
+    const el = document.getElementById('reservations-content');
+    if (!el) return;
+    const u = State.currentUser;
+    const myRes = u ? (State.reservations||[]).filter(r=>r.customerId===u.id||r.customer===u.name) : [];
+    if (myRes.length === 0) {
+      el.innerHTML = `<div style="text-align:center;padding:70px 20px;color:var(--muted)">
+        <div style="font-size:44px;margin-bottom:14px">📅</div>
+        <p style="font-size:15px;margin-bottom:6px">No reservations yet</p>
+        <p style="font-size:13px;margin-bottom:20px">Book a table at your favourite restaurant.</p>
+        <button class="btn-primary" style="width:auto;padding:10px 22px" onclick="App.go('restaurants')">Browse Restaurants</button>
+      </div>`;
+      return;
+    }
+    el.innerHTML = myRes.map(r => `
+      <div style="background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--green);border-radius:var(--r);padding:20px;margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+          <div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${r.id} · ${new Date(r.createdAt||Date.now()).toLocaleDateString()}</div>
+            <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800">${r.restaurant}</div>
+          </div>
+          <span style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;background:rgba(34,197,94,.1);color:var(--green)">✅ ${r.status||'confirmed'}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:${r.notes?'12px':'0'}">
+          <div style="background:var(--surface2);border-radius:9px;padding:10px 12px">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Date</div>
+            <div style="font-size:13px;font-weight:500">📅 ${r.date}</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:9px;padding:10px 12px">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Time</div>
+            <div style="font-size:13px;font-weight:500">🕐 ${r.time}</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:9px;padding:10px 12px">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Guests</div>
+            <div style="font-size:13px;font-weight:500">👥 ${r.party} guests</div>
+          </div>
+          ${r.phone?`<div style="background:var(--surface2);border-radius:9px;padding:10px 12px">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Phone</div>
+            <div style="font-size:13px;font-weight:500">📱 ${r.phone}</div>
+          </div>`:''}
+        </div>
+        ${r.notes?`<div style="margin-top:10px;padding:10px 12px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);border-radius:9px;font-size:13px;color:var(--muted)">📝 ${r.notes}</div>`:''}
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)">
+          A confirmation SMS has been sent${r.phone?' to '+r.phone:''}.
+        </div>
+      </div>`).join('');
+  }
+};
+
 
 /* ═══════════════════════════════════
    INIT
@@ -1899,12 +2223,14 @@ const ResModal={
     document.getElementById('login-overlay').style.display = 'flex';
   }
 
-  // Start tracker ticker if there are active live orders
+  // Start  // Start ticker if live orders exist
   if ((State.liveOrders||[]).some(o=>o.stage!=='ready'&&!o.paused)) {
     Tracker._ticker = setInterval(()=>Tracker._tick(), 1000);
   }
 
   Nav._update();
+  Poller.start();
+  DineLog.info('DineFlow initialised', {version:'3.0', role:State.role||'none', orders:(State.orders||[]).length});
 })();
 </script>
 </body>
