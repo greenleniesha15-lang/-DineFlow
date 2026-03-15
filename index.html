@@ -532,6 +532,92 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 .oo-status-bar.ready    { background: rgba(34,197,94,.08);  color: var(--green); }
 .oo-status-bar.declined { background: rgba(239,68,68,.06);  color: var(--red); }
 .oo-pulse { width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: pulse 1.4s infinite; flex-shrink: 0; }
+
+/* ═══════ GLOWING FEATURE CARDS (inspired by GlowingEffect component) ═══════ */
+@property --glow-start {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@property --glow-active {
+  syntax: '<number>';
+  initial-value: 0;
+  inherits: false;
+}
+
+.feature-card {
+  position: relative;
+  overflow: visible;
+  --glow-spread: 40deg;
+  --glow-start: 0deg;
+  --glow-active: 0;
+}
+
+/* The animated conic gradient border */
+.feature-card::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: calc(var(--r) + 1px);
+  padding: 1px;
+  background: conic-gradient(
+    from calc((var(--glow-start) - var(--glow-spread)) * 1deg),
+    transparent 0deg,
+    #dd7bbb,
+    #d79f1e calc(var(--glow-spread) * 0.5deg),
+    #5a922c var(--glow-spread),
+    #4c7894 calc(var(--glow-spread) * 1.5deg),
+    #dd7bbb calc(var(--glow-spread) * 2deg),
+    transparent calc(var(--glow-spread) * 2.1deg)
+  );
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: var(--glow-active);
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Glow blur layer underneath */
+.feature-card::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: calc(var(--r) + 2px);
+  background: conic-gradient(
+    from calc((var(--glow-start) - var(--glow-spread)) * 1deg),
+    transparent 0deg,
+    rgba(221,123,187,0.4),
+    rgba(215,159,30,0.3) calc(var(--glow-spread) * 0.5deg),
+    rgba(90,146,44,0.35) var(--glow-spread),
+    rgba(76,120,148,0.3) calc(var(--glow-spread) * 1.5deg),
+    transparent calc(var(--glow-spread) * 2.1deg)
+  );
+  filter: blur(8px);
+  opacity: calc(var(--glow-active) * 0.6);
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.feature-card > * { position: relative; z-index: 1; }
+
+.feature-card:hover {
+  border-color: transparent !important;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0,0,0,.4);
+}
+
+.feat-icon {
+  font-size: 30px;
+  margin-bottom: 12px;
+  display: block;
+  transition: transform 0.3s ease;
+}
+.feature-card:hover .feat-icon {
+  transform: scale(1.15) rotate(-3deg);
+}
 </style>
 </head>
 <body>
@@ -606,7 +692,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
     </div>
     <div class="nav-links" id="nav-links">
       <button class="nav-link active" data-view="home">Home</button>
-      <button class="nav-link" data-view="restaurants">Restaurants</button>
+      <button class="nav-link" data-view="restaurants">🍽 Our Restaurants</button>
       <button class="nav-link" data-view="tracker" id="tracker-link" style="display:none">📡 Track Order</button>
       <button class="nav-link" data-view="myorders" id="myorders-link" style="display:none">🧾 My Orders<span id="mo-badge" class="badge" style="display:none">!</span></button>
       <button class="nav-link" data-view="reservations" id="reservations-link" style="display:none">📅 Reservations</button>
@@ -652,7 +738,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
       <h1>Reserve. Order.<br><span>Track. Earn.</span></h1>
       <p>Place your order, get a unique number, and watch every stage of your meal — from kitchen to table — in real time.</p>
       <div class="hero-actions">
-        <button class="btn-primary" style="width:auto" onclick="App.go('restaurants')">Browse Menu</button>
+        <button class="btn-primary" style="width:auto" onclick="App.go('restaurants')">🍽 Our Restaurants</button>
         <button class="btn-ghost" onclick="App.go('tracker')">📡 Track My Order</button>
       </div>
     </div>
@@ -674,23 +760,39 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   <h2 class="section-title" style="font-size:22px;margin-bottom:18px">Everything in one place</h2>
   <div class="features-grid">
     <div class="feature-card" onclick="App.go('restaurants')">
-      <div class="feat-icon">🛒</div><h3>Order Food</h3>
-      <p>Browse the menu, add items, and place your order in seconds.</p>
-      <span class="feat-link">Order now →</span>
+      <div class="feat-icon">🍽</div>
+      <h3>Our Restaurants</h3>
+      <p>3 Caribbean restaurants — browse menus, add items, and place your order in seconds.</p>
+      <span class="feat-link">View restaurants →</span>
     </div>
     <div class="feature-card" onclick="App.go('tracker')">
-      <div class="feat-icon">📡</div><h3>Live Tracking</h3>
-      <p>Real-time 5-stage progress from kitchen to your table.</p>
-      <span class="feat-link">Track order →</span>
+      <div class="feat-icon">📡</div>
+      <h3>Live Order Tracking</h3>
+      <p>Watch your order move through 5 stages from the kitchen straight to your table.</p>
+      <span class="feat-link">Track my order →</span>
+    </div>
+    <div class="feature-card" onclick="App.go('reservations')">
+      <div class="feat-icon">📅</div>
+      <h3>Reserve a Table</h3>
+      <p>Book a table for any party size. Choose your preferred time and get instant confirmation.</p>
+      <span class="feat-link">Book a table →</span>
     </div>
     <div class="feature-card" onclick="App.go('myorders')">
-      <div class="feat-icon">🧾</div><h3>My Orders</h3>
-      <p>See all your orders, approval status, and order history.</p>
+      <div class="feat-icon">🧾</div>
+      <h3>My Orders</h3>
+      <p>All your orders in one place — active, past, with real-time kitchen status updates.</p>
       <span class="feat-link">View orders →</span>
     </div>
+    <div class="feature-card" onclick="typeof ChatWidget!=='undefined'&&ChatWidget.open()">
+      <div class="feat-icon">💬</div>
+      <h3>Message Staff</h3>
+      <p>Chat directly with our team — ask questions, get updates, or request anything you need.</p>
+      <span class="feat-link">Start chatting →</span>
+    </div>
     <div class="feature-card" onclick="App.go('loyalty')">
-      <div class="feat-icon">🎯</div><h3>Earn Rewards</h3>
-      <p>Every order earns points. Redeem for discounts and perks.</p>
+      <div class="feat-icon">🎯</div>
+      <h3>Earn Rewards</h3>
+      <p>Every order earns DineFlow points. Redeem them for free sides, discounts, and perks.</p>
       <span class="feat-link">View rewards →</span>
     </div>
   </div>
@@ -699,7 +801,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 <!-- ═══════════ RESTAURANTS ═══════════ -->
 <div class="view" id="view-restaurants">
   <div class="page-header">
-    <h2>Menu</h2>
+    <h2>Our Restaurants</h2>
     <div class="filter-tabs" id="filter-tabs">
       <button class="filter-tab active" data-filter="all" onclick="Menu.filter('all',this)">All</button>
       <button class="filter-tab" data-filter="r1"  onclick="Menu.filter('r1',this)">🌴 Island Vibes</button>
@@ -877,19 +979,19 @@ const RESTAURANTS = [
   },
   {
     id:'r3', name:'Waterfalls', emoji:'💧', cuisine:'caribbean',
-    rating:'4.7', time:'20–35', price:'$$', tags:['Proteins','BBQ','Starches'],
-    desc:'Nature-inspired dining — hearty proteins and home-style Caribbean starches.',
+    rating:'4.7', time:'20–30', price:'$', tags:['Proteins','Home-Style','Starches'],
+    desc:'Home-style comfort food with fresh proteins and classic sides — made with love.',
     menuSections:[
       { heading:'Proteins', type:'simple', items:[
-        { id:'wf1', name:'Jerk Chicken',  emoji:'🍗', price:1800, desc:'Authentic jerk chicken from the wood-fire grill.' },
-        { id:'wf2', name:'Grilled Fish',  emoji:'🐠', price:2000, desc:'Line-caught fish grilled to perfection with island spices.' },
-        { id:'wf3', name:'BBQ Pork',      emoji:'🥩', price:2500, desc:'Fall-off-the-bone BBQ pork with a sweet smoky glaze.' }
+        { id:'wf1', name:'Curry Chicken',       emoji:'🍛', price:625,  desc:'Tender chicken simmered in a rich, fragrant curry sauce.' },
+        { id:'wf2', name:'Brown Stew Chicken',  emoji:'🍗', price:650,  desc:'Classic brown stew chicken, slow-cooked to fall-off-the-bone perfection.' },
+        { id:'wf3', name:'Fried Fish',          emoji:'🐟', price:725,  desc:'Crispy golden fried fish, seasoned with local herbs and spices.' }
       ]},
       { heading:'Starches', type:'simple', items:[
-        { id:'wf4', name:'Rice and Peas',        emoji:'🍚', price:500, desc:'Coconut rice cooked with kidney peas.' },
-        { id:'wf5', name:'Fried Plantain',        emoji:'🍌', price:500, desc:'Sweet golden fried plantain slices.' },
-        { id:'wf6', name:'Festival',              emoji:'🫓', price:500, desc:'Sweet fried dumplings, crispy outside.' },
-        { id:'wf7', name:'Roasted Sweet Potato',  emoji:'🍠', price:500, desc:'Oven-roasted sweet potato, lightly seasoned.' }
+        { id:'wf4', name:'White Rice',          emoji:'🍚', price:275, desc:'Fluffy steamed white rice.' },
+        { id:'wf5', name:'Mashed Potato',       emoji:'🥔', price:300, desc:'Creamy buttered mashed potato.' },
+        { id:'wf6', name:'Boiled Dumpling',     emoji:'🫓', price:225, desc:'Soft, hand-rolled boiled dumplings.' },
+        { id:'wf7', name:'Macaroni and Cheese', emoji:'🧀', price:325, desc:'Creamy baked macaroni and cheese.' }
       ]}
     ],
     get menu() { return _buildMenu(this.menuSections); }
@@ -3228,6 +3330,53 @@ const StaffChat = {
   Poller.start();
   DineLog.info('DineFlow initialised', {version:'3.1', role:State.role||'none', orders:(State.orders||[]).length, storage:'split-localStorage+sessionStorage'});
 })();
+
+/* ── GlowingEffect: track mouse and rotate conic gradient on feature cards ── */
+(function initGlowEffect() {
+  let ticking = false;
+
+  document.addEventListener('pointermove', (e) => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.feature-card').forEach(card => {
+        const rect = card.getBoundingClientRect();
+        const cx = rect.left + rect.width  * 0.5;
+        const cy = rect.top  + rect.height * 0.5;
+        const dx = e.clientX - cx;
+        const dy = e.clientY - cy;
+
+        // Is the cursor close enough?
+        const dist = Math.hypot(dx, dy);
+        const proximity = 120;
+        const inRange = (
+          e.clientX > rect.left  - proximity &&
+          e.clientX < rect.right + proximity &&
+          e.clientY > rect.top   - proximity &&
+          e.clientY < rect.bottom+ proximity
+        );
+
+        if (!inRange) {
+          card.style.setProperty('--glow-active', '0');
+        } else {
+          // Angle from center to mouse
+          const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+          card.style.setProperty('--glow-start', String(angle));
+          card.style.setProperty('--glow-active', '1');
+        }
+      });
+      ticking = false;
+    });
+  });
+
+  // Reset on mouse leave
+  document.addEventListener('mouseleave', () => {
+    document.querySelectorAll('.feature-card').forEach(card => {
+      card.style.setProperty('--glow-active', '0');
+    });
+  });
+})();
+
 </script>
 </body>
 </html>
