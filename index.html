@@ -21,24 +21,20 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:var(--bg)} ::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:3px}
 
 /* NAV */
-.nav{position:sticky;top:0;z-index:200;background:rgba(13,15,20,.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.nav{position:sticky;top:0;z-index:200;background:#ffffff;border-bottom:1px solid rgba(0,0,0,.08);box-shadow:0 1px 12px rgba(0,0,0,.06)}
 .nav-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:0 20px;height:60px}
 .logo-mark{width:34px;height:34px;border-radius:9px;background:var(--accent);display:grid;place-items:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#fff}
-.nav-name{font-family:'Syne',sans-serif;font-weight:800;font-size:18px}
+.nav-name{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:#111}
 .nav-brand{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .nav-links{display:flex;gap:2px;flex:1;overflow-x:auto}
-.nav-link{background:none;border:none;cursor:pointer;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:6px 12px;border-radius:8px;transition:all .2s;white-space:nowrap;flex-shrink:0}
-.nav-link:hover{color:var(--text);background:var(--surface2)}
-.nav-link.active{color:var(--text);background:var(--surface2)}
+.nav-link{background:none;border:none;cursor:pointer;color:#555;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:6px 12px;border-radius:8px;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.nav-link:hover{color:#111;background:rgba(0,0,0,.05)}
+.nav-link.active{color:#111;background:rgba(0,0,0,.07)}
 .staff-link{color:var(--purple)!important}
 .staff-link:hover,.staff-link.active{background:var(--staff-light)!important;color:var(--purple)!important}
 .nav-user{display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0}
 .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple));display:grid;place-items:center;font-family:'Syne',sans-serif;font-size:12px;font-weight:800;cursor:pointer}
 .guest-pill{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:3px 10px;border-radius:20px;font-family:'Syne',sans-serif;font-size:12px;font-weight:800;flex-shrink:0}
-.nav-back-fwd{display:flex;gap:4px;flex-shrink:0}
-.nav-btn{width:28px;height:28px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:14px;display:grid;place-items:center;transition:all .2s}
-.nav-btn:not(:disabled):hover{color:var(--text);border-color:var(--accent)}
-.nav-btn:disabled{opacity:.3;cursor:not-allowed}
 
 /* VIEWS */
 .view{display:none;max-width:1280px;margin:0 auto;padding:28px 20px 80px}
@@ -861,9 +857,9 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   padding: 5px 14px !important;
   font-size: 12px !important;
   height: 30px;
-  border-color: var(--border);
-  background: var(--surface2);
-  color: var(--muted);
+  border: none !important;
+  background: transparent;
+  color: #444;
 }
 .nav-ihb .ihb-blob {
   background: var(--accent);
@@ -877,33 +873,15 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   color: #fff;
 }
 .nav-ihb.active {
-  border-color: var(--accent);
-  color: var(--text);
-  background: var(--surface);
+  border: none !important;
+  color: var(--accent);
+  background: rgba(249,115,22,.08);
 }
 .nav-ihb.active .ihb-label {
-  color: var(--text);
+  color: var(--accent);
+  font-weight: 700;
 }
 
-/* ═══════ WAVY BACKGROUND (WavyBackground component port) ═══════ */
-#view-home {
-  position: relative;
-  overflow: hidden;
-}
-#hero-wave-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  pointer-events: none;
-  filter: blur(10px);
-  opacity: .7;
-}
-.hero {
-  position: relative;
-  z-index: 1;
-}
 
 /* ═══════ CANVAS REVEAL EFFECT (CanvasRevealEffect port) ═══════ */
 #hero-reveal-canvas {
@@ -927,6 +905,22 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   position: relative;
   z-index: 2;
 }
+
+/* ═══════ PARTICLES (port of Particles component) ═══════ */
+#nav-particles {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+#nav-particles canvas {
+  width: 100%;
+  height: 100%;
+}
+.nav-inner { position: relative; z-index: 1; }
 </style>
 </head>
 <body>
@@ -994,14 +988,11 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 
 <!-- ═══════════ NAV ═══════════ -->
 <nav class="nav" id="nav">
+  <div id="nav-particles" aria-hidden="true"><canvas id="nav-particle-canvas"></canvas></div>
   <div class="nav-inner">
     <div class="nav-brand" onclick="App.go('home')" style="cursor:pointer" title="Go Home">
       <div class="logo-mark">DF</div>
       <span class="nav-name">DineFlow</span>
-    </div>
-    <div class="nav-back-fwd">
-      <button class="nav-btn" id="nav-back" onclick="Nav.back()" disabled title="Back">‹</button>
-      <button class="nav-btn" id="nav-fwd" onclick="Nav.fwd()" disabled title="Forward">›</button>
     </div>
     <div class="nav-links" id="nav-links">
 
@@ -1050,10 +1041,10 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
         <span class="ihb-reveal">🎯 Rewards <svg class="ihb-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
       </button>
 
-    /div>
+    </div>
     <div class="nav-user">
       <div id="guest-num-pill" style="display:none" class="guest-pill"></div>
-      <div class="points-pill" id="nav-pts" style="background:var(--surface2);border:1px solid var(--border);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500">⭐ 0 pts</div>
+      <div class="points-pill" id="nav-pts" style="background:rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.1);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;color:#444">⭐ 0 pts</div>
       <!-- Staff button top-right -->
       <button onclick="Auth.showStaffModal()" id="staff-nav-btn"
         style="flex-shrink:0;display:flex;align-items:center;gap:5px;background:var(--staff-light);border:1px solid rgba(124,58,237,.3);color:var(--purple);padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:all .2s"
@@ -1085,8 +1076,6 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 <!-- ═══════════ HOME ═══════════ -->
 <div class="view active" id="view-home">
   <section class="hero" id="hero-section">
-    <!-- WavyBackground canvas -->
-    <canvas id="hero-wave-canvas" aria-hidden="true"></canvas>
     <!-- CanvasRevealEffect canvas (shows on hover) -->
     <canvas id="hero-reveal-canvas" aria-hidden="true"></canvas>
     <div>
@@ -1570,9 +1559,7 @@ const Nav = {
   back() { if (this.pos > 0) { this.pos--; App._go(this.stack[this.pos]); this._update(); } },
   fwd()  { if (this.pos < this.stack.length-1) { this.pos++; App._go(this.stack[this.pos]); this._update(); } },
   _update() {
-    const b = document.getElementById('nav-back'), f = document.getElementById('nav-fwd');
-    if (b) b.disabled = this.pos <= 0;
-    if (f) f.disabled = this.pos >= this.stack.length - 1;
+      // nav back/fwd removed
   }
 };
 
@@ -3860,82 +3847,6 @@ const StaffChat = {
 
 
 /* ══════════════════════════════════════════════════════
-   WavyBackground — port of WavyBackground React component
-   Uses simplex-noise algorithm (inline 3D noise function)
-   ══════════════════════════════════════════════════════ */
-(function initWavyBackground() {
-  const canvas = document.getElementById('hero-wave-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-
-  // Inline simplex-noise (3D noise) — self-contained implementation
-  // Based on Ken Perlin's simplex noise algorithm
-  const F3 = 1/3, G3 = 1/6;
-  const grad3 = [[1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0],[1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1],[0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]];
-  const p = [];
-  for (let i=0;i<256;i++) p[i]=Math.floor(Math.random()*256);
-  const perm=new Array(512), permMod12=new Array(512);
-  for(let i=0;i<512;i++){perm[i]=p[i&255];permMod12[i]=perm[i]%12;}
-  function dot3(g,x,y,z){return g[0]*x+g[1]*y+g[2]*z;}
-  function noise3D(xin,yin,zin){
-    let n0,n1,n2,n3;
-    const s=(xin+yin+zin)*F3;
-    const i=Math.floor(xin+s),j=Math.floor(yin+s),k=Math.floor(zin+s);
-    const t=(i+j+k)*G3;
-    const x0=xin-(i-t),y0=yin-(j-t),z0=zin-(k-t);
-    let i1,j1,k1,i2,j2,k2;
-    if(x0>=y0){if(y0>=z0){i1=1;j1=0;k1=0;i2=1;j2=1;k2=0;}else if(x0>=z0){i1=1;j1=0;k1=0;i2=1;j2=0;k2=1;}else{i1=0;j1=0;k1=1;i2=1;j2=0;k2=1;}}else{if(y0<z0){i1=0;j1=0;k1=1;i2=0;j2=1;k2=1;}else if(x0<z0){i1=0;j1=1;k1=0;i2=0;j2=1;k2=1;}else{i1=0;j1=1;k1=0;i2=1;j2=1;k2=0;}}
-    const x1=x0-i1+G3,y1=y0-j1+G3,z1=z0-k1+G3;
-    const x2=x0-i2+2*G3,y2=y0-j2+2*G3,z2=z0-k2+2*G3;
-    const x3=x0-1+3*G3,y3=y0-1+3*G3,z3=z0-1+3*G3;
-    const ii=i&255,jj=j&255,kk=k&255;
-    let t0=0.6-x0*x0-y0*y0-z0*z0;if(t0<0)n0=0;else{t0*=t0;n0=t0*t0*dot3(grad3[permMod12[ii+perm[jj+perm[kk]]]],x0,y0,z0);}
-    let t1=0.6-x1*x1-y1*y1-z1*z1;if(t1<0)n1=0;else{t1*=t1;n1=t1*t1*dot3(grad3[permMod12[ii+i1+perm[jj+j1+perm[kk+k1]]]],x1,y1,z1);}
-    let t2=0.6-x2*x2-y2*y2-z2*z2;if(t2<0)n2=0;else{t2*=t2;n2=t2*t2*dot3(grad3[permMod12[ii+i2+perm[jj+j2+perm[kk+k2]]]],x2,y2,z2);}
-    let t3=0.6-x3*x3-y3*y3-z3*z3;if(t3<0)n3=0;else{t3*=t3;n3=t3*t3*dot3(grad3[permMod12[ii+1+perm[jj+1+perm[kk+1]]]],x3,y3,z3);}
-    return 32*(n0+n1+n2+n3);
-  }
-
-  // Wave colours matching DineFlow palette
-  const WAVE_COLORS = ['#f97316','#a855f7','#3b82f6','#22c55e','#f59e0b'];
-  let nt = 0, w, h, animId;
-  const SPEED = 0.002;
-
-  function resize() {
-    w = canvas.width  = canvas.offsetWidth  || window.innerWidth;
-    h = canvas.height = canvas.offsetHeight || window.innerHeight;
-  }
-
-  function drawWave(n) {
-    nt += SPEED;
-    for (let i = 0; i < n; i++) {
-      ctx.beginPath();
-      ctx.lineWidth = 40;
-      ctx.strokeStyle = WAVE_COLORS[i % WAVE_COLORS.length];
-      for (let x = 0; x < w; x += 5) {
-        const y = noise3D(x / 800, 0.3 * i, nt) * 100;
-        ctx.lineTo(x, y + h * 0.5);
-      }
-      ctx.stroke();
-      ctx.closePath();
-    }
-  }
-
-  function render() {
-    ctx.fillStyle = '#0d0f14';
-    ctx.globalAlpha = 0.45;
-    ctx.fillRect(0, 0, w, h);
-    drawWave(5);
-    animId = requestAnimationFrame(render);
-  }
-
-  resize();
-  window.addEventListener('resize', resize);
-  render();
-})();
-
-
-/* ══════════════════════════════════════════════════════
    CanvasRevealEffect — port of CanvasRevealEffect component
    Dot matrix that "reveals" on hover using random opacity + time
    ══════════════════════════════════════════════════════ */
@@ -4029,6 +3940,121 @@ const StaffChat = {
   hero.addEventListener('mouseleave', stop);
   // Also restart when mouse re-enters for fresh wave
   hero.addEventListener('mouseenter', () => { startTime = null; });
+})();
+
+
+/* ══════════════════════════════════════════════════════
+   Particles — port of Particles React component
+   Mouse-reactive floating dots in the nav bar
+   ══════════════════════════════════════════════════════ */
+(function initNavParticles() {
+  const container = document.getElementById('nav-particles');
+  const canvas    = document.getElementById('nav-particle-canvas');
+  if (!container || !canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  // Config — matches demo: quantity=100, ease=80, color=#ffffff
+  const QUANTITY   = 80;
+  const STATICITY  = 50;
+  const EASE       = 80;
+  const SIZE       = 0.4;
+  const COLOR      = '#f97316';  // orange accent on white backgroundes
+  const VX = 0, VY = 0;
+
+  function hexToRgb(hex) {
+    hex = hex.replace('#','');
+    if (hex.length===3) hex=hex.split('').map(c=>c+c).join('');
+    const n=parseInt(hex,16);
+    return [(n>>16)&255,(n>>8)&255,n&255];
+  }
+  const RGB = hexToRgb(COLOR);
+
+  const dpr = window.devicePixelRatio || 1;
+  let W=0, H=0;
+  let mouse = {x:0, y:0};
+  let circles = [];
+
+  function resize() {
+    W = container.offsetWidth;
+    H = container.offsetHeight;
+    canvas.width  = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width  = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.scale(dpr, dpr);
+    circles = [];
+    for (let i=0; i<QUANTITY; i++) circles.push(makeCircle());
+  }
+
+  function makeCircle() {
+    return {
+      x: Math.random() * W,
+      y: Math.random() * H,
+      tx: 0, ty: 0,
+      size: Math.floor(Math.random()*2) + SIZE,
+      alpha: 0,
+      targetAlpha: parseFloat((Math.random()*0.6+0.1).toFixed(1)),
+      dx: (Math.random()-0.5)*0.1,
+      dy: (Math.random()-0.5)*0.1,
+      magnetism: 0.1 + Math.random()*4
+    };
+  }
+
+  function remap(v,a,b,c,d){ const r=((v-a)*(d-c))/(b-a)+c; return r>0?r:0; }
+
+  function draw(c, update) {
+    ctx.save();
+    ctx.translate(c.tx, c.ty);
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, c.size, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(${RGB[0]},${RGB[1]},${RGB[2]},${c.alpha})`;
+    ctx.fill();
+    ctx.restore();
+    if (!update) circles.push(c);
+  }
+
+  function animate() {
+    ctx.clearRect(0,0,W,H);
+    circles.forEach((c,i) => {
+      const edge = [
+        c.x+c.tx-c.size,
+        W-c.x-c.tx-c.size,
+        c.y+c.ty-c.size,
+        H-c.y-c.ty-c.size,
+      ];
+      const closest = Math.min(...edge);
+      const remapped = parseFloat(remap(closest,0,20,0,1).toFixed(2));
+      if (remapped > 1) { c.alpha = Math.min(c.alpha+0.02, c.targetAlpha); }
+      else              { c.alpha = c.targetAlpha * remapped; }
+
+      c.x += c.dx + VX;
+      c.y += c.dy + VY;
+      c.tx += (mouse.x/(STATICITY/c.magnetism) - c.tx) / EASE;
+      c.ty += (mouse.y/(STATICITY/c.magnetism) - c.ty) / EASE;
+
+      draw(c, true);
+
+      if (c.x<-c.size||c.x>W+c.size||c.y<-c.size||c.y>H+c.size) {
+        circles.splice(i,1);
+        circles.push(makeCircle());
+      }
+    });
+    requestAnimationFrame(animate);
+  }
+
+  window.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left - W/2;
+    const y = e.clientY - rect.top  - H/2;
+    if (x<W/2&&x>-W/2&&y<H/2&&y>-H/2) { mouse.x=x; mouse.y=y; }
+  });
+
+  window.addEventListener('resize', () => {
+    resize();
+  });
+
+  resize();
+  animate();
 })();
 
 </script>
