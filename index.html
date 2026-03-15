@@ -603,8 +603,8 @@ const RESTAURANTS = [
     desc:'Fresh proteins and classic Caribbean sides, made to order.',
     menuSections:[
       { heading:'Protein', type:'select', items:[
-        { id:'m1', name:'Wings', emoji:'🍗', desc:'Crispy fried chicken wings.',
-          variants:[{label:'6 Wings',price:1500},{label:'12 Piece',price:2200}] },
+        { id:'m1a', name:'Wings (6 pcs)', emoji:'🍗', price:1500, desc:'Crispy fried chicken wings — 6 piece.' },
+        { id:'m1b', name:'Wings (12 pcs)', emoji:'🍗', price:2200, desc:'Crispy fried chicken wings — 12 piece.' },
         { id:'m3', name:'Curry Shrimp', emoji:'🦐', price:2500, desc:'Tender shrimp in rich Jamaican curry.' },
         { id:'m4', name:'Salmon', emoji:'🐟', price:3000, desc:'Pan-seared salmon fillet with herb butter.' }
       ]},
@@ -618,15 +618,7 @@ const RESTAURANTS = [
       const out = [];
       this.menuSections.forEach(sec => {
         sec.items.forEach(item => {
-          if (item.variants) {
-            item.variants.forEach(v => out.push({
-              id: item.id+'_'+v.label.replace(/\s+/g,'_'),
-              name: item.name+' — '+v.label, emoji: item.emoji, price: v.price, desc: item.desc,
-              baseId: item.id, variantLabel: v.label
-            }));
-          } else {
-            out.push({ id:item.id, name:item.name, emoji:item.emoji, price:item.price, desc:item.desc });
-          }
+          out.push({ id:item.id, name:item.name, emoji:item.emoji, price:item.price, desc:item.desc });
         });
       });
       return out;
@@ -972,25 +964,6 @@ const Menu = {
     r.menuSections.forEach(sec => {
       html += '<h3 class="menu-section-heading">'+sec.heading+'</h3><div class="menu-grid">';
       sec.items.forEach(item => {
-        if (item.variants) {
-          const selId = 'sel-'+r.id+'-'+item.id;
-          const priceId = 'price-'+r.id+'-'+item.id;
-          html += `<div class="menu-item" style="flex-direction:column">
-            <div style="display:flex;gap:12px;margin-bottom:10px">
-              <div class="menu-emoji">${item.emoji}</div>
-              <div><div class="menu-name">${item.name}</div><div class="menu-desc">${item.desc}</div></div>
-            </div>
-            <div style="position:relative;margin-bottom:8px">
-              <select id="${selId}" class="form-select" style="appearance:none;padding-right:28px;font-size:13px"
-                onchange="Menu.updateVariantPrice('${selId}','${priceId}',${JSON.stringify(item.variants)})">
-                ${item.variants.map(v=>`<option value="${v.label}" data-price="${v.price}">${v.label} — J$${v.price.toLocaleString()}</option>`).join('')}
-              </select><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--muted)">▾</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <span class="menu-price" id="${priceId}">J$${item.variants[0].price.toLocaleString()}</span>
-              <button class="add-btn" onclick="Cart.addVariant('${r.id}','${item.id}','${selId}',${JSON.stringify(item.variants)},'${item.emoji}','${item.desc.replace(/'/g,"\\'")}')">+</button>
-            </div></div>`;
-        } else {
           html += `<div class="menu-item" style="display:flex;gap:12px">
             <div class="menu-emoji">${item.emoji}</div>
             <div class="menu-info" style="flex:1">
@@ -1000,7 +973,6 @@ const Menu = {
                 <span class="menu-price">J$${item.price.toLocaleString()}</span>
                 <button class="add-btn" onclick="Cart.add('${r.id}','${item.id}')">+</button>
               </div></div></div>`;
-        }
       });
       html += '</div>';
     });
@@ -1009,11 +981,7 @@ const Menu = {
     App.go('detail');
   },
 
-  updateVariantPrice(selId, priceId, variants) {
-    const sel = document.getElementById(selId); if(!sel) return;
-    const v = variants.find(x=>x.label===sel.value);
-    const el = document.getElementById(priceId); if(v&&el) el.textContent='J$'+v.price.toLocaleString();
-  }
+
 };
 
 /* ═══════════════════════════════════
@@ -1035,22 +1003,7 @@ const Cart = {
     this.render();
   },
 
-  addVariant(restId, baseId, selId, variants, emoji, desc) {
-    const r = RESTAURANTS.find(x=>x.id===restId);
-    const sel = document.getElementById(selId);
-    const label = sel ? sel.value : variants[0].label;
-    const v = variants.find(x=>x.label===label)||variants[0];
-    const cartId = baseId+'_'+label.replace(/\s+/g,'_');
-    const name = r.menuSections.flatMap(s=>s.items).find(i=>i.id===baseId)?.name||'Wings';
-    const fullName = name+' — '+label;
-    const item = { id:cartId, name:fullName, emoji, price:v.price, desc, qty:1, restId, restName:r.name };
-    const ex = State.cart.find(x=>x.id===cartId);
-    if (ex) ex.qty++;
-    else State.cart = [...State.cart, item];
-    this.updateFAB();
-    Toast.show('✓ '+fullName+' added','success');
-    this.render();
-  },
+
 
   remove(itemId) {
     const cart = State.cart;
