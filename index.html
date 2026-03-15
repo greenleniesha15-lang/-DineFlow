@@ -278,10 +278,6 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 .ap-items{padding:0 16px 10px;display:flex;flex-wrap:wrap;gap:5px}
 .ap-chip{background:var(--surface2);border:1px solid var(--border);padding:3px 9px;border-radius:20px;font-size:12px}
 .ap-actions{display:flex;gap:8px;padding:10px 16px;border-top:1px solid var(--border)}
-.btn-approve{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(34,197,94,.3);background:rgba(34,197,94,.1);color:var(--green);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
-.btn-approve:hover{background:rgba(34,197,94,.2)}
-.btn-decline{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(239,68,68,.25);background:rgba(239,68,68,.08);color:var(--red);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
-.btn-decline:hover{background:rgba(239,68,68,.18)}
 .ap-status{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase}
 .ap-status.approved{background:rgba(34,197,94,.12);color:var(--green)}
 .ap-status.declined{background:rgba(239,68,68,.1);color:var(--red)}
@@ -494,7 +490,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
     </div>
     <div class="feature-card" onclick="App.go('myorders')">
       <div class="feat-icon">🧾</div><h3>My Orders</h3>
-      <p>See all your orders, approval status, and order history.</p>
+      <p>See all your orders, live kitchen stage, and order history.</p>
       <span class="feat-link">View orders →</span>
     </div>
     <div class="feature-card" onclick="App.go('loyalty')">
@@ -563,19 +559,15 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
     <button onclick="Auth.changeGuest()" style="margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:7px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif">Sign out</button>
   </div>
   <div class="admin-tabs" id="staff-tabs">
-    <button class="admin-tab active" data-tab="approvals" onclick="Staff.showTab('approvals',this)">✅ Approvals<span id="ap-badge" class="badge" style="display:none">0</span></button>
-    <button class="admin-tab" data-tab="orders" onclick="Staff.showTab('orders',this)">📦 Orders</button>
+    <button class="admin-tab active" data-tab="orders" onclick="Staff.showTab('orders',this)">📦 Orders</button>
     <button class="admin-tab" data-tab="kitchen" onclick="Staff.showTab('kitchen',this)">🔥 Kitchen</button>
     <button class="admin-tab" data-tab="notifs" onclick="Staff.showTab('notifs',this)">🔔 Notifications<span id="notif-bell-count" class="badge" style="display:none">0</span></button>
     <button class="admin-tab" data-tab="sms" onclick="Staff.showTab('sms',this)">💬 SMS Log</button>
-    <button class="admin-tab" data-tab="code" onclick="Staff.showTab('code',this)">🧑‍💻 Code Preview</button>
   </div>
-  <div id="staff-approvals"></div>
-  <div id="staff-orders" style="display:none"></div>
+  <div id="staff-orders"></div>
   <div id="staff-kitchen" style="display:none"></div>
   <div id="staff-notifs" style="display:none"></div>
   <div id="staff-sms" style="display:none"></div>
-  <div id="staff-code" style="display:none"></div>
 </div>
 
 <!-- ═══════════ CART ═══════════ -->
@@ -1128,7 +1120,6 @@ const Cart = {
     const restId = State.cart[0].restId;
     const rest = RESTAURANTS.find(x=>x.id===restId);
     const total = this.subtotal();
-    const confirmCode = String(1000+Math.floor(Math.random()*9000));
     const guestPhone = State.currentUser?.phone || u.phone;
 
     const newOrder = {
@@ -1137,12 +1128,9 @@ const Cart = {
       customer: u.name, customerId: u.id,
       guestNum: u.guestNum, phone: guestPhone,
       items: State.cart.map(x=>({name:x.name,qty:x.qty,price:x.price})),
-      total, status:'pending', approval:'pending',
+      total, status:'active',
       placedAt:new Date().toISOString(),
       points: Math.floor(total/100),
-      confirmCode,
-      guestConfirmed: false,
-      waiterConfirmed: false,
       estMins: 15,
     };
 
@@ -1153,28 +1141,22 @@ const Cart = {
     this.close();
     Loyalty.updatePts();
 
-    // ── Auto-add to kitchen immediately as pending approval ──
-    Staff._addToKitchenPending(newOrder);
+    // ── Send order directly to kitchen (no approval step) ──
+    Staff._addToKitchen(newOrder);
 
     // ── SMS directly to the GUEST ──
     if (guestPhone) {
       SMS.send(guestPhone,
-        '🍽 Hi '+u.name+'! Your order '+orderId+' at '+rest?.name+' is placed & awaiting staff approval. Est. '+newOrder.estMins+' mins. We\'ll text you at every stage!'
+        '🍽 Hi '+u.name+'! Your order '+orderId+' at '+rest?.name+' is in the kitchen now! Est. '+newOrder.estMins+' mins. We\'ll text you at every stage! 🔥'
       );
     }
 
     // Staff notification (internal only)
-    Notify.send('📦 New Order Pending: '+orderId,
+    Notify.send('📦 New Order: '+orderId,
       'Guest #'+u.guestNum+' — '+u.name+'\nPhone: '+(guestPhone||'N/A')+'\nItems: '+newOrder.items.map(i=>i.qty+'× '+i.name).join(', ')+'\nTotal: J$'+total.toLocaleString()+'\nTime: '+new Date().toLocaleString(),'order');
 
     const mob = document.getElementById('mo-badge');
     if (mob) { mob.style.display='inline-flex'; mob.textContent='!'; }
-
-    const apBadge = document.getElementById('ap-badge');
-    if (apBadge) {
-      const pCount = (State.orders||[]).filter(o=>o.approval==='pending').length;
-      apBadge.textContent=pCount; apBadge.style.display=pCount>0?'inline-flex':'none';
-    }
 
     App.go('confirm');
     Confirmation.show(newOrder);
@@ -1193,7 +1175,7 @@ const Confirmation = {
         <h2 style="font-size:18px;margin-bottom:6px">Order Placed!</h2>
         <div class="confirm-order-num">${order.id}</div>
         <div class="confirm-guest">👤 ${order.customer} &nbsp;·&nbsp; <span style="color:var(--accent);font-weight:700">Guest #${order.guestNum}</span></div>
-        <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Your order number matches your guest number — show this to your waiter.</p>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Your order is in the kitchen! Show this number to your waiter.</p>
 
         ${order.phone ? `
         <div class="sms-notif-banner">
@@ -1203,14 +1185,10 @@ const Confirmation = {
           ⚠️ No phone number saved — you won't receive SMS updates. Add a phone in My Orders.
         </div>`}
 
-        <div class="waiter-confirm-box">
-          <p>🤝 <strong>Both you and your waiter must confirm</strong> this order number to proceed.</p>
-          <div class="waiter-code">${order.confirmCode}</div>
-          <div class="phone-confirm-hint">Show this code to your waiter for dual confirmation</div>
-        </div>
-
-        <div style="background:var(--surface2);border-radius:var(--r);padding:14px;margin:16px 0;font-size:13px;color:var(--muted)">
-          ⏱ Estimated time: <strong style="color:var(--text)">${order.estMins} minutes</strong>
+        <div style="background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.25);border-radius:var(--r);padding:16px;margin:16px 0;text-align:center">
+          <div style="font-size:28px;margin-bottom:8px">🔥</div>
+          <div style="font-size:14px;font-weight:600;color:var(--green)">Your order is in the kitchen!</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:6px">Estimated time: <strong style="color:var(--text)">${order.estMins} minutes</strong></div>
         </div>
 
         <h4 style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px">Your Order</h4>
@@ -1250,7 +1228,7 @@ const Tracker = {
 
   _renderLookup(el) {
     const u = State.currentUser;
-    const myActive = u ? (State.orders||[]).filter(o=>o.customerId===u.id && o.approval==='approved' && o.status!=='cancelled') : [];
+    const myActive = u ? (State.orders||[]).filter(o=>o.customerId===u.id && o.status!=='cancelled') : [];
     const liveMatch = State.liveOrders?.find(o => u && o.guestNum === u.guestNum);
 
     el.innerHTML = `
@@ -1457,26 +1435,23 @@ const Tracker = {
   },
 
   _renderOrderCard(el, order, name, gn, items, restaurant, oid) {
-    const approval = order.approval||'pending';
-    const approvalColors = {pending:'var(--gold)',approved:'var(--green)',declined:'var(--red)'};
-    const approvalLabels = {pending:'⏳ Awaiting staff approval',approved:'✅ Order approved',declined:'❌ Order declined'};
+    // Find live kitchen order for this order
+    const liveOrder = (State.liveOrders||[]).find(o=>o.orderId===order.id || o.id==='LT-'+order.id);
+    const stageIdx = liveOrder ? STAGES.findIndex(s=>s.key===liveOrder.stage) : 0;
+    const currentStage = liveOrder ? STAGES[stageIdx] : STAGES[0];
 
-    // Stage timeline for approved orders (show pending stages grayed out)
-    let stageTimeline = '';
-    if (approval === 'approved') {
-      stageTimeline = `
-        <div style="background:var(--surface2);border-radius:var(--r);padding:14px;margin:14px 0">
-          <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">Order Journey</div>
-          <div class="stage-timeline">
-            ${STAGES.map((s,i)=>`<div class="stage-timeline-row ${i===0?'active':'upcoming'}">
-              <div class="stage-tl-dot ${i===0?'active':'upcoming'}"></div>
-              <span style="font-size:15px">${s.icon}</span>
-              <div style="flex:1"><div style="font-size:13px">${s.label.replace('\n',' ')}</div></div>
-              <span class="stage-tl-time">${i===0?'Now':'—'}</span>
-            </div>`).join('')}
-          </div>
-        </div>`;
-    }
+    const stageTimeline = STAGES.map((s,i)=>{
+      const isDone = i < stageIdx;
+      const isActive = i === stageIdx;
+      return `<div class="stage-timeline-row ${isDone?'done':isActive?'active':'upcoming'}">
+        <div class="stage-tl-dot ${isDone?'done':isActive?'active':'upcoming'}"></div>
+        <span style="font-size:15px">${s.icon}</span>
+        <div style="flex:1"><div style="font-size:13px">${s.label.replace('\n',' ')}</div>
+        ${isActive?`<div style="font-size:11px;color:var(--muted);margin-top:1px">${s.desc}</div>`:''}
+        </div>
+        <span class="stage-tl-time">${isDone?'✓':isActive?'Now':'—'}</span>
+      </div>`;
+    }).join('');
 
     el.innerHTML = `
       <div style="max-width:560px;margin:0 auto">
@@ -1491,28 +1466,29 @@ const Tracker = {
         ${order.phone ? `<div class="sms-notif-banner">📱 SMS updates will be sent to <strong>${order.phone}</strong></div>` : ''}
 
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:16px;text-align:center">
-          <div style="font-size:36px;margin-bottom:12px">${approval==='approved'?'✅':approval==='declined'?'❌':'⏳'}</div>
-          <div style="font-size:16px;font-weight:600;color:${approvalColors[approval]}">${approvalLabels[approval]}</div>
-          ${approval==='pending'?'<p style="font-size:13px;color:var(--muted);margin-top:8px">Your waiter will confirm your order shortly.</p>':''}
-          ${approval==='approved'?'<p style="font-size:13px;color:var(--muted);margin-top:8px">Your order is being prepared!</p>':''}
-          ${approval==='declined'?'<p style="font-size:13px;color:var(--muted);margin-top:8px">Please speak to a staff member to re-order.</p>':''}
+          <div style="font-size:36px;margin-bottom:12px">${currentStage.icon}</div>
+          <div style="font-size:16px;font-weight:600" style="color:${currentStage.color}">${currentStage.label.replace('\n',' ')}</div>
+          <p style="font-size:13px;color:var(--muted);margin-top:8px">${currentStage.desc}</p>
         </div>
 
-        ${stageTimeline}
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px">
+          <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px">Order Journey</div>
+          <div class="stage-timeline">${stageTimeline}</div>
+        </div>
 
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
           <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">Your order</div>
           ${items.map(i=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--border)"><span>${i.qty}× ${i.name}</span><span style="color:var(--accent)">J$${(i.price*i.qty).toLocaleString()}</span></div>`).join('')}
           <div style="display:flex;justify-content:space-between;font-weight:700;padding:8px 0"><span>Total</span><span style="color:var(--accent)">J$${order.total.toLocaleString()}</span></div>
         </div>
-        ${approval==='approved'?`<button class="btn-primary" style="margin-top:12px" onclick="App.go('restaurants')">Order More</button>`:''}
+        <button class="btn-primary" style="margin-top:12px" onclick="App.go('restaurants')">Order More</button>
       </div>`;
   },
 
   _tick() {
     let changed=false;
     (State.liveOrders||[]).forEach(o=>{
-      if (o.paused||o.stage==='ready'||o.approvalPending) return;
+      if (o.paused||o.stage==='ready') return;
       if (o.remainingSecs>0) {
         o.remainingSecs--; changed=true;
         const pct=1-o.remainingSecs/o.totalSecs;
@@ -1534,7 +1510,7 @@ const Tracker = {
     o.notifiedAlmost=true;
     Toast.show('⏱ Table '+o.tableNo+': almost ready!','warn');
     // SMS to GUEST
-    if (o.phone) SMS.send(o.phone,'⏱ Hi '+o.guestName+'! 🍽 Your order at Island Vibes is almost ready — about 2 mins! Get ready!');
+    if (o.phone) SMS.send(o.phone,'⏱ Hi '+o.guestName+'! Your order from '+o.restaurant+' is almost ready — about 2 mins! 🍽');
     Notify.send('⏱ Order Almost Ready — '+o.id,'Table '+o.tableNo+'\nGuest #'+o.guestNum+' '+o.guestName,'order');
   },
 
@@ -1586,12 +1562,15 @@ const MyOrders = {
 
     el.innerHTML = myOrders.map(o=>{
       const age=Math.round((Date.now()-new Date(o.placedAt).getTime())/60000);
-      const ap=o.approval||'pending';
-      return `<div class="order-card ${ap}">
+      const liveO=(State.liveOrders||[]).find(lo=>lo.orderId===o.id||lo.id==='LT-'+o.id);
+      const stg=liveO?STAGES.find(s=>s.key===liveO.stage):null;
+      const stgColor=liveO?(liveO.stage==='ready'?'var(--green)':liveO.stage==='plating'?'var(--purple)':liveO.stage==='cooking'?'var(--accent2)':liveO.stage==='preparing'?'var(--accent)':'var(--blue)'):'var(--muted)';
+      const stgLabel=stg?(stg.icon+' '+stg.label.replace('\n',' ')):'📋 In Queue';
+      return `<div class="order-card" style="border-left:3px solid ${stgColor}">
         <div class="oc-header">
           <div><div class="oc-id">${o.id} · ${age<60?age+'m ago':Math.round(age/60)+'h ago'}</div>
           <div class="oc-rest">${o.restaurantName}</div></div>
-          <span class="oc-badge ${ap}">${ap==='pending'?'⏳ Pending':ap==='approved'?'✅ Approved':'❌ Declined'}</span>
+          <span class="oc-badge" style="background:rgba(0,0,0,.15);color:${stgColor};border:1px solid ${stgColor}40">${stgLabel}</span>
         </div>
         <div class="oc-items">${o.items.map(i=>'<span class="oc-chip">'+i.qty+'× '+i.name+'</span>').join('')}</div>
         <div class="oc-footer">
@@ -1599,8 +1578,7 @@ const MyOrders = {
           <button onclick="App.go('tracker');Tracker.lookupByOrderId('${o.id}')" style="background:none;border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif">📡 Track</button>
         </div>
         ${o.phone?`<div style="margin-top:8px;font-size:11px;color:var(--muted)">📱 SMS updates → ${o.phone}</div>`:''}
-        ${ap==='approved'?'<div style="margin-top:10px;padding:8px 12px;background:rgba(34,197,94,.07);border-radius:8px;font-size:12px;color:var(--green)">✅ Approved — your order is being prepared!</div>':''}
-        ${ap==='declined'?'<div style="margin-top:10px;padding:8px 12px;background:rgba(239,68,68,.06);border-radius:8px;font-size:12px;color:var(--red)">❌ Declined — please speak to a staff member.</div>':''}
+
       </div>`;
     }).join('');
   }
@@ -1631,7 +1609,7 @@ const OrderHistory = {
    STAFF DASHBOARD
 ═══════════════════════════════════ */
 const Staff = {
-  activeTab: 'approvals',
+  activeTab: 'orders',
 
   render() { this.showTab(this.activeTab, null); },
 
@@ -1645,118 +1623,18 @@ const Staff = {
         b.classList.toggle('active', b.dataset.tab===tab);
       });
     }
-    ['approvals','orders','kitchen','notifs','sms','code'].forEach(t=>{
+    ['orders','kitchen','notifs','sms'].forEach(t=>{
       const el=document.getElementById('staff-'+t);
       if(el) el.style.display=t===tab?'block':'none';
     });
-    if (tab==='approvals') this.renderApprovals();
     if (tab==='orders')    this.renderAllOrders();
     if (tab==='kitchen')   this.renderKitchen();
     if (tab==='notifs')    this.renderNotifs();
     if (tab==='sms')       this.renderSMS();
-    if (tab==='code')      this.renderCode();
-  },
-
-  renderApprovals() {
-    const el = document.getElementById('staff-approvals');
-    const orders = State.orders || [];
-    const pending  = orders.filter(o=>o.approval==='pending');
-    const actioned = orders.filter(o=>o.approval&&o.approval!=='pending');
-    const badge = document.getElementById('ap-badge');
-    if (badge){ badge.textContent=pending.length; badge.style.display=pending.length>0?'inline-flex':'none'; }
-
-    const card = (o, showBtns) => {
-      const age=Math.round((Date.now()-new Date(o.placedAt).getTime())/60000);
-      return `<div class="ap-card ${o.approval||'pending'}">
-        <div class="ap-header">
-          <div class="ap-num">${o.guestNum||'?'}</div>
-          <div class="ap-info"><div class="ap-name">${o.customer}</div>
-          <div class="ap-meta">${o.id} · ${o.restaurantName} · ${age<60?age+'m':Math.round(age/60)+'h'} ago${o.phone?' · 📱 '+o.phone:''}</div></div>
-          <div class="ap-total">J$${o.total.toLocaleString()}</div>
-        </div>
-        <div class="ap-items">${o.items.map(i=>'<span class="ap-chip">'+i.qty+'× '+i.name+'</span>').join('')}</div>
-        ${o.confirmCode?`<div style="padding:8px 16px;font-size:12px;color:var(--muted)">Confirm code: <strong style="font-family:'Syne',sans-serif;font-size:16px;color:var(--gold);letter-spacing:3px">${o.confirmCode}</strong></div>`:''}
-        <div class="ap-actions">
-          ${showBtns
-            ? `<button class="btn-approve" onclick="Staff.approve('${o.id}')">✅ Approve</button>
-               <button class="btn-decline" onclick="Staff.decline('${o.id}')">❌ Decline</button>`
-            : `<span class="ap-status ${o.approval}">${o.approval==='approved'?'✅ Approved':'❌ Declined'}</span>`}
-        </div></div>`;
-    };
-
-    el.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:8px">
-        <div><h3 style="font-size:17px">Order Approvals</h3>
-        <p style="color:var(--muted);font-size:12px;margin-top:3px">${pending.length} pending · ${actioned.length} actioned</p></div>
-        ${pending.length>0?`<button onclick="Staff.approveAll()" style="background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:var(--green);padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">✅ Approve All (${pending.length})</button>`:''}
-      </div>
-      ${pending.length===0?'<div style="text-align:center;padding:48px;color:var(--muted)"><div style="font-size:40px;margin-bottom:10px">✅</div><p>All caught up!</p></div>':''}
-      ${pending.map(o=>card(o,true)).join('')}
-      ${actioned.length>0?`<h4 style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin:20px 0 10px">Recent decisions</h4>${actioned.slice(0,8).map(o=>card(o,false)).join('')}`:''}`;
-  },
-
-  approve(orderId) {
-    const o=(State.orders||[]).find(x=>x.id===orderId); if(!o) return;
-    o.approval='approved'; o.status='confirmed';
-    State.orders=[...State.orders];
-    Toast.show('✅ '+orderId+' approved!','success');
-    Notify.send('✅ Approved: '+orderId,'Guest #'+(o.guestNum||'?')+' '+o.customer+'\nJ$'+o.total.toLocaleString(),'order');
-    // SMS the GUEST to let them know their order was approved
-    if (o.phone) SMS.send(o.phone,'✅ Hi '+o.customer+'! Great news — your order '+orderId+' has been approved and the kitchen is on it! Est. '+o.estMins+' mins. Track it live on DineFlow.');
-    this._addToKitchen(o);
-    this.renderApprovals();
-  },
-
-  decline(orderId) {
-    const o=(State.orders||[]).find(x=>x.id===orderId); if(!o) return;
-    o.approval='declined'; o.status='cancelled';
-    State.orders=[...State.orders];
-    Toast.show('❌ '+orderId+' declined.','warn');
-    Notify.send('❌ Declined: '+orderId,'Guest #'+(o.guestNum||'?')+' '+o.customer,'order');
-    // SMS the GUEST about the decline
-    if (o.phone) SMS.send(o.phone,'Hi '+o.customer+', unfortunately your order '+orderId+' was declined. Please speak to a staff member — we\'re happy to help!');
-    this.renderApprovals();
-  },
-
-  approveAll() {
-    const pending=(State.orders||[]).filter(o=>o.approval==='pending');
-    pending.forEach(o=>{ o.approval='approved'; o.status='confirmed'; this._addToKitchen(o); });
-    State.orders=[...State.orders];
-    Toast.show('✅ '+pending.length+' orders approved!','success');
-    Notify.send('✅ Bulk Approve',pending.length+' orders at '+new Date().toLocaleString(),'order');
-    // SMS each guest
-    pending.forEach(o=>{
-      if(o.phone) SMS.send(o.phone,'✅ Hi '+o.customer+'! Your order '+o.id+' is approved and being prepared. ~'+o.estMins+' mins. Track it live on DineFlow!');
-    });
-    this.renderApprovals();
   },
 
   _addToKitchen(order) {
-    const already=(State.liveOrders||[]).find(o=>o.orderId===order.id);
-    if (already) {
-      // Unlock the pending-approval kitchen card
-      already.approvalPending=false; already.paused=false;
-      if (already.stage==='pending_approval') already.stage='received';
-      State.liveOrders=[...(State.liveOrders||[])];
-      if (!Tracker._ticker) Tracker._ticker=setInterval(()=>Tracker._tick(),1000);
-      return;
-    }
-    const live = {
-      id:'LT-'+order.id, orderId:order.id,
-      guestNum:order.guestNum, guestName:order.customer, phone:order.phone,
-      tableNo:'T-'+String(order.guestNum||1).padStart(2,'0'),
-      restaurant:order.restaurantName, items:order.items,
-      totalSecs:order.estMins*60, remainingSecs:order.estMins*60,
-      stage:'received', paused:false, approvalPending:false,
-      placedAt:order.placedAt, delayFlag:false, notifiedAlmost:false,
-      waiterConfirmed:true
-    };
-    State.liveOrders=[live,...(State.liveOrders||[])];
-    if (!Tracker._ticker) Tracker._ticker=setInterval(()=>Tracker._tick(),1000);
-  },
-
-  _addToKitchenPending(order) {
-    const already=(State.liveOrders||[]).find(o=>o.orderId===order.id);
+    const already=(State.liveOrders||[]).find(o=>o.orderId===order.id||o.id==='LT-'+order.id);
     if (already) return;
     const live = {
       id:'LT-'+order.id, orderId:order.id,
@@ -1764,39 +1642,24 @@ const Staff = {
       tableNo:'T-'+String(order.guestNum||1).padStart(2,'0'),
       restaurant:order.restaurantName, items:order.items,
       totalSecs:order.estMins*60, remainingSecs:order.estMins*60,
-      stage:'pending_approval', paused:true, approvalPending:true,
+      stage:'received', paused:false,
       placedAt:order.placedAt, delayFlag:false, notifiedAlmost:false,
-      waiterConfirmed:false
+      waiterConfirmed:true
     };
     State.liveOrders=[live,...(State.liveOrders||[])];
+    if (!Tracker._ticker) Tracker._ticker=setInterval(()=>Tracker._tick(),1000);
   },
+
 
   renderKitchen() {
     const el=document.getElementById('staff-kitchen');
     const live=State.liveOrders||[];
-    const pending=live.filter(o=>o.approvalPending);
-    const active=live.filter(o=>!o.approvalPending&&o.stage!=='ready');
-    const done=live.filter(o=>!o.approvalPending&&o.stage==='ready');
+    const active=live.filter(o=>o.stage!=='ready');
+    const done=live.filter(o=>o.stage==='ready');
     const stageKeys=STAGES.map(s=>s.key);
 
     const fmtTime=(s)=>{ if(s<=0) return '0:00'; return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
     const urgClass=(o)=>{ const p=1-o.remainingSecs/o.totalSecs; return o.delayFlag||p>=0.85?'urgent':p>=0.6?'warn':'ok'; };
-
-    const pendingCard=(o)=>`
-      <div class="k-card" style="opacity:.7;border-color:var(--gold)">
-        <div class="k-head" style="background:rgba(245,158,11,.08)">
-          <div><div class="k-table" style="color:var(--gold)">⏳ Awaiting Approval</div>
-          <div class="k-order-id">Guest #${o.guestNum} · ${o.tableNo} · ${o.id}</div></div>
-          <div style="font-size:11px;color:var(--gold);font-weight:700;background:rgba(245,158,11,.12);padding:3px 8px;border-radius:20px">PENDING</div>
-        </div>
-        <div class="k-body">
-          <div class="k-items">${o.items.map(i=>i.qty+'× '+i.name).join(' · ')}</div>
-          <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Kitchen is locked — approve to start cooking</div>
-          <div class="k-btns">
-            <button class="k-btn primary" onclick="Staff.quickApprove('${o.orderId}')">✅ Approve & Start</button>
-            <button class="k-btn" style="border-color:rgba(239,68,68,.3);color:var(--red)" onclick="Staff.quickDecline('${o.orderId}')">❌ Decline</button>
-          </div>
-        </div></div>`;
 
     const kCard=(o)=>{
       const stIdx=stageKeys.indexOf(o.stage);
@@ -1910,29 +1773,33 @@ const Staff = {
     const el=document.getElementById('staff-orders');
     const orders=State.orders||[];
     const rev=orders.reduce((a,o)=>a+o.total,0);
-    const active=orders.filter(o=>!['cancelled'].includes(o.status)).length;
     el.innerHTML=`
       <div class="stats-row">
         <div class="stat-card"><div class="stat-label">Total Orders</div><div class="stat-val">${orders.length}</div></div>
-        <div class="stat-card"><div class="stat-label">Active</div><div class="stat-val" style="color:var(--accent)">${active}</div></div>
+        <div class="stat-card"><div class="stat-label">In Kitchen</div><div class="stat-val" style="color:var(--accent)">${(State.liveOrders||[]).filter(o=>o.stage!=='ready').length}</div></div>
         <div class="stat-card"><div class="stat-label">Revenue</div><div class="stat-val" style="color:var(--green);font-size:22px">J$${rev.toLocaleString()}</div></div>
         <div class="stat-card"><div class="stat-label">Avg. Order</div><div class="stat-val" style="font-size:22px">${orders.length?'J$'+Math.round(rev/orders.length).toLocaleString():'—'}</div></div>
       </div>
-      ${orders.length===0?'<div style="text-align:center;padding:48px;color:var(--muted)">No orders yet.</div>':''}
+      ${orders.length===0?'<div style="text-align:center;padding:48px;color:var(--muted)"><div style="font-size:40px;margin-bottom:12px">📋</div><p>No orders yet. Orders will appear here as customers place them.</p></div>':''}
       ${orders.map(o=>{
         const age=Math.round((Date.now()-new Date(o.placedAt).getTime())/60000);
-        const ap=o.approval||'pending';
-        return `<div class="ap-card ${ap}" style="border-left-color:${ap==='approved'?'var(--green)':ap==='declined'?'var(--red)':'var(--gold)'}">
+        const live=(State.liveOrders||[]).find(lo=>lo.orderId===o.id||lo.id==='LT-'+o.id);
+        const stage=live?STAGES.find(s=>s.key===live.stage):STAGES[0];
+        const stageColor=live?(live.stage==='ready'?'var(--green)':live.stage==='plating'?'var(--purple)':live.stage==='cooking'?'var(--accent2)':live.stage==='preparing'?'var(--accent)':'var(--blue)'):'var(--muted)';
+        return `<div class="ap-card" style="border-left:3px solid ${stageColor}">
           <div class="ap-header">
             <div class="ap-num">${o.guestNum||'?'}</div>
-            <div class="ap-info"><div class="ap-name">${o.customer}</div>
-            <div class="ap-meta">${o.id} · ${o.restaurantName} · ${age<60?age+'m':Math.round(age/60)+'h'} ago${o.phone?' · 📱 '+o.phone:''}</div></div>
-            <div class="ap-total">J$${o.total.toLocaleString()}</div>
+            <div class="ap-info">
+              <div class="ap-name">${o.customer} <span style="font-size:11px;font-weight:400;color:var(--muted)">Guest #${o.guestNum||'?'}</span></div>
+              <div class="ap-meta">${o.id} · ${o.restaurantName} · ${age<60?age+'m':Math.round(age/60)+'h'} ago${o.phone?' · 📱 '+o.phone:''}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+              <div class="ap-total">J$${o.total.toLocaleString()}</div>
+              <div style="font-size:11px;font-weight:600;color:${stageColor};background:${stageColor.replace(')',',0.1)').replace('var(','rgba(')};padding:2px 8px;border-radius:20px">${stage?stage.icon+' '+stage.label.replace('\n',' '):'📋 Received'}</div>
+            </div>
           </div>
           <div class="ap-items">${o.items.map(i=>'<span class="ap-chip">'+i.qty+'× '+i.name+'</span>').join('')}</div>
-          <div class="ap-actions"><span class="ap-status ${ap}">${ap}</span>
-          ${ap==='pending'?`<button class="btn-approve" onclick="Staff.approve('${o.id}');Staff.renderAllOrders()">✅</button><button class="btn-decline" onclick="Staff.decline('${o.id}');Staff.renderAllOrders()">❌</button>`:''}
-          </div></div>`;
+        </div>`;
       }).join('')}`;
   },
 
@@ -1974,52 +1841,6 @@ const Staff = {
         <div style="font-size:11px;color:var(--muted)">To: ${n.to}</div>
         <pre>${n.body}</pre>
       </div>`).join('')}`;
-  }
-,
-
-  quickApprove(orderId) {
-    this.approve(orderId);
-    this.showTab('kitchen', null);
-  },
-
-  quickDecline(orderId) {
-    this.decline(orderId);
-    this.showTab('kitchen', null);
-  },
-
-  renderCode() {
-    const el = document.getElementById('staff-code');
-    if (!el) return;
-    const src = document.documentElement.outerHTML;
-    const escaped = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    el.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
-        <div>
-          <h3 style="font-size:17px">🧑‍💻 Code Preview</h3>
-          <p style="color:var(--muted);font-size:12px;margin-top:3px">Full source — read-only snapshot · ${src.length.toLocaleString()} chars</p>
-        </div>
-        <button onclick="Staff._copyCode()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">📋 Copy All</button>
-      </div>
-      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);overflow:auto;max-height:70vh">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface2);z-index:10">
-          <span style="font-size:11px;color:var(--muted);font-family:monospace">dineflow.html</span>
-          <div style="display:flex;gap:5px">
-            <span style="width:10px;height:10px;border-radius:50%;background:var(--red);display:inline-block"></span>
-            <span style="width:10px;height:10px;border-radius:50%;background:var(--gold);display:inline-block"></span>
-            <span style="width:10px;height:10px;border-radius:50%;background:var(--green);display:inline-block"></span>
-          </div>
-        </div>
-        <pre style="padding:16px;font-size:11px;line-height:1.7;font-family:'Courier New',monospace;color:#a8b3cf;white-space:pre;overflow-x:auto;margin:0">${escaped}</pre>
-      </div>`;
-  },
-
-  _copyCode() {
-    const src = document.documentElement.outerHTML;
-    navigator.clipboard.writeText(src).then(()=>{
-      Toast.show('📋 Full source copied!','success');
-    }).catch(()=>{
-      Toast.show('⚠️ Copy failed — try selecting manually','warn');
-    });
   }
 };
 
@@ -2128,7 +1949,7 @@ const ResModal={
   }
 
   // Start tracker ticker if there are active live orders
-  if ((State.liveOrders||[]).some(o=>o.stage!=='ready'&&!o.paused&&!o.approvalPending)) {
+  if ((State.liveOrders||[]).some(o=>o.stage!=='ready'&&!o.paused)) {
     Tracker._ticker = setInterval(()=>Tracker._tick(), 1000);
   }
 
