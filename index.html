@@ -758,6 +758,175 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   transition: opacity 0.2s;
 }
 .mb-wrap:hover .mb-hover-gloss { opacity: 1; }
+
+/* ═══════════ INTERACTIVE HOVER BUTTON (port of InteractiveHoverButton component) ═══════════ */
+.ihb {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 160px;
+  padding: 10px 22px;
+  border-radius: 9999px;       /* rounded-full */
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  overflow: hidden;
+  text-align: center;
+  text-decoration: none;
+  transition: color 0.15s;
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* Sliding text — moves right and fades on hover */
+.ihb-label {
+  display: inline-block;
+  transform: translateX(2px);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+.ihb:hover .ihb-label {
+  transform: translateX(48px);
+  opacity: 0;
+}
+
+/* Arrow + text that slides in from right */
+.ihb-reveal {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  transform: translateX(48px);
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.ihb:hover .ihb-reveal {
+  transform: translateX(-2px);
+  opacity: 1;
+}
+.ihb-arrow {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* The blob that expands to fill the button on hover */
+.ihb-blob {
+  position: absolute;
+  left: 20%;
+  top: 40%;
+  width: 8px;
+  height: 8px;
+  border-radius: 8px;
+  background: var(--accent);
+  transform: scale(1);
+  transition: left 0.3s ease, top 0.3s ease,
+              width 0.3s ease, height 0.3s ease,
+              transform 0.3s ease;
+  z-index: 1;
+}
+.ihb:hover .ihb-blob {
+  left: 0%;
+  top: 0%;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  transform: scale(1.8);
+}
+
+/* Accent variant (ghost look, accent blob) */
+.ihb-accent {
+  border-color: rgba(249,115,22,.3);
+  color: var(--accent);
+}
+.ihb-accent .ihb-blob {
+  background: var(--accent);
+}
+
+/* Nav-specific IHB sizing */
+.nav-ihb {
+  min-width: auto !important;
+  padding: 5px 14px !important;
+  font-size: 12px !important;
+  height: 30px;
+  border-color: var(--border);
+  background: var(--surface2);
+  color: var(--muted);
+}
+.nav-ihb .ihb-blob {
+  background: var(--accent);
+  width: 6px;
+  height: 6px;
+  left: 18%;
+  top: 35%;
+}
+.nav-ihb .ihb-reveal {
+  font-size: 12px;
+  color: #fff;
+}
+.nav-ihb.active {
+  border-color: var(--accent);
+  color: var(--text);
+  background: var(--surface);
+}
+.nav-ihb.active .ihb-label {
+  color: var(--text);
+}
+
+/* ═══════ WAVY BACKGROUND (WavyBackground component port) ═══════ */
+#view-home {
+  position: relative;
+  overflow: hidden;
+}
+#hero-wave-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  filter: blur(10px);
+  opacity: .7;
+}
+.hero {
+  position: relative;
+  z-index: 1;
+}
+
+/* ═══════ CANVAS REVEAL EFFECT (CanvasRevealEffect port) ═══════ */
+#hero-reveal-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.hero:hover #hero-reveal-canvas,
+.hero-reveal-active #hero-reveal-canvas {
+  opacity: 0.22;
+}
+
+/* Wrap hero content above canvases */
+.hero > div,
+.hero > div:last-child {
+  position: relative;
+  z-index: 2;
+}
 </style>
 </head>
 <body>
@@ -783,7 +952,11 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
         onkeydown="if(event.key==='Enter')Auth.enterAsGuest()"/>
     </div>
     <div class="error-msg" id="guest-error"></div>
-    <button class="btn-primary" onclick="Auth.enterAsGuest()">Enter DineFlow →</button>
+    <button class="ihb" style="width:100%" onclick="Auth.enterAsGuest()" aria-label="Enter DineFlow">
+          <span class="ihb-blob"></span>
+          <span class="ihb-label">Enter DineFlow →</span>
+          <span class="ihb-reveal">Enter DineFlow <svg class="ihb-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+        </button>
     <div class="divider"></div>
     <div style="text-align:center">
       <button onclick="Auth.showStaffModal()"
@@ -832,46 +1005,52 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
     </div>
     <div class="nav-links" id="nav-links">
 
-      <!-- Home — MetalButton -->
-      <div class="mb-wrap mb-default nav-link active" id="mb-home" data-view="home" onclick="App.go('home')" tabindex="0" role="button" aria-label="Home">
-        <div class="mb-inner"></div>
-        <span class="mb-btn">🏠 Home<span class="mb-shine"></span><span class="mb-hover-gloss"></span></span>
-      </div>
+      <!-- Home -->
+      <button class="ihb nav-ihb nav-link active" id="mb-home" data-view="home" onclick="App.go('home')">
+        <span class="ihb-blob"></span>
+        <span class="ihb-label">🏠 Home</span>
+        <span class="ihb-reveal">🏠 Home <svg class="ihb-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+      </button>
 
-      <!-- Our Restaurants — MetalButton -->
-      <div class="mb-wrap mb-default nav-link" id="mb-restaurants" data-view="restaurants" onclick="App.go('restaurants')" tabindex="0" role="button" aria-label="Restaurants">
-        <div class="mb-inner"></div>
-        <span class="mb-btn">🍽 Our Restaurants<span class="mb-shine"></span><span class="mb-hover-gloss"></span></span>
-      </div>
+      <!-- Our Restaurants -->
+      <button class="ihb nav-ihb nav-link" id="mb-restaurants" data-view="restaurants" onclick="App.go('restaurants')">
+        <span class="ihb-blob"></span>
+        <span class="ihb-label">🍽 Restaurants</span>
+        <span class="ihb-reveal">🍽 Restaurants <svg class="ihb-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+      </button>
 
-      <!-- Track Order — MetalButton (customer only) -->
-      <div class="mb-wrap mb-default nav-link" id="tracker-link" data-view="tracker" onclick="App.go('tracker')" tabindex="0" role="button" aria-label="Track Order" style="display:none">
-        <div class="mb-inner"></div>
-        <span class="mb-btn">📡 Track Order<span class="mb-shine"></span><span class="mb-hover-gloss"></span></span>
-      </div>
+      <!-- Track Order (customer only) -->
+      <button class="ihb nav-ihb nav-link" id="tracker-link" data-view="tracker" onclick="App.go('tracker')" style="display:none">
+        <span class="ihb-blob"></span>
+        <span class="ihb-label">📡 Track Order</span>
+        <span class="ihb-reveal">📡 Track <svg class="ihb-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+      </button>
 
-      <!-- My Orders — MetalButton (customer only) -->
-      <div class="mb-wrap mb-default nav-link" id="myorders-link" data-view="myorders" onclick="App.go('myorders')" tabindex="0" role="button" aria-label="My Orders" style="display:none">
-        <div class="mb-inner"></div>
-        <span class="mb-btn">🧾 My Orders<span id="mo-badge" class="badge" style="display:none">!</span><span class="mb-shine"></span><span class="mb-hover-gloss"></span></span>
-      </div>
+      <!-- My Orders (customer only) -->
+      <button class="ihb nav-ihb nav-link" id="myorders-link" data-view="myorders" onclick="App.go('myorders')" style="display:none">
+        <span class="ihb-blob"></span>
+        <span class="ihb-label">🧾 My Orders<span id="mo-badge" class="badge" style="display:none">!</span></span>
+        <span class="ihb-reveal">🧾 Orders <svg class="ihb-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+      </button>
 
-      <!-- Reservations — MetalButton (customer only) -->
-      <div class="mb-wrap mb-default nav-link" id="reservations-link" data-view="reservations" onclick="App.go('reservations')" tabindex="0" role="button" aria-label="Reservations" style="display:none">
-        <div class="mb-inner"></div>
-        <span class="mb-btn">📅 Reservations<span class="mb-shine"></span><span class="mb-hover-gloss"></span></span>
-      </div>
+      <!-- Reservations (customer only) -->
+      <button class="ihb nav-ihb nav-link" id="reservations-link" data-view="reservations" onclick="App.go('reservations')" style="display:none">
+        <span class="ihb-blob"></span>
+        <span class="ihb-label">📅 Reservations</span>
+        <span class="ihb-reveal">📅 Reserve <svg class="ihb-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+      </button>
 
-      <!-- History — plain (hidden) -->
+      <!-- History (hidden) -->
       <button class="nav-link" data-view="orders" style="display:none">History</button>
 
-      <!-- Rewards — MetalButton -->
-      <div class="mb-wrap mb-default nav-link" id="mb-loyalty" data-view="loyalty" onclick="App.go('loyalty')" tabindex="0" role="button" aria-label="Rewards">
-        <div class="mb-inner"></div>
-        <span class="mb-btn">🎯 Rewards<span class="mb-shine"></span><span class="mb-hover-gloss"></span></span>
-      </div>
+      <!-- Rewards -->
+      <button class="ihb nav-ihb nav-link" id="mb-loyalty" data-view="loyalty" onclick="App.go('loyalty')">
+        <span class="ihb-blob"></span>
+        <span class="ihb-label">🎯 Rewards</span>
+        <span class="ihb-reveal">🎯 Rewards <svg class="ihb-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+      </button>
 
-    </div>
+    /div>
     <div class="nav-user">
       <div id="guest-num-pill" style="display:none" class="guest-pill"></div>
       <div class="points-pill" id="nav-pts" style="background:var(--surface2);border:1px solid var(--border);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500">⭐ 0 pts</div>
@@ -905,7 +1084,11 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 
 <!-- ═══════════ HOME ═══════════ -->
 <div class="view active" id="view-home">
-  <section class="hero">
+  <section class="hero" id="hero-section">
+    <!-- WavyBackground canvas -->
+    <canvas id="hero-wave-canvas" aria-hidden="true"></canvas>
+    <!-- CanvasRevealEffect canvas (shows on hover) -->
+    <canvas id="hero-reveal-canvas" aria-hidden="true"></canvas>
     <div>
       <h1 style="line-height:1.08;margin-bottom:16px;font-size:clamp(32px,5vw,60px)">
         <svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
@@ -925,8 +1108,16 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
       </h1>
       <p>Place your order, get a unique number, and watch every stage of your meal — from kitchen to table — in real time.</p>
       <div class="hero-actions">
-        <button class="btn-primary" style="width:auto" onclick="App.go('restaurants')">🍽 Our Restaurants</button>
-        <button class="btn-ghost" onclick="App.go('tracker')">📡 Track My Order</button>
+        <button class="ihb" onclick="App.go('restaurants')" aria-label="Our Restaurants">
+          <span class="ihb-blob"></span>
+          <span class="ihb-label">🍽 Our Restaurants</span>
+          <span class="ihb-reveal">🍽 Our Restaurants <svg class="ihb-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+        </button>
+        <button class="ihb ihb-accent" onclick="App.go('tracker')" aria-label="Track My Order">
+          <span class="ihb-blob"></span>
+          <span class="ihb-label">📡 Track My Order</span>
+          <span class="ihb-reveal">📡 Track My Order <svg class="ihb-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+        </button>
       </div>
     </div>
     <div style="display:flex;justify-content:center">
@@ -1953,7 +2144,11 @@ const Tracker = {
           <div style="font-size:56px;margin-bottom:18px">🛍️</div>
           <h2 style="margin-bottom:8px">No orders yet</h2>
           <p style="color:var(--muted);font-size:14px;margin-bottom:24px">Place your first order to track it here in real time.</p>
-          <button class="btn-primary" style="width:auto;padding:12px 28px" onclick="App.go('restaurants')">🍽 Browse Menu</button>
+          <button class="ihb" onclick="App.go('restaurants')" aria-label="Browse Menu">
+          <span class="ihb-blob"></span>
+          <span class="ihb-label">🍽 Browse Menu</span>
+          <span class="ihb-reveal">🍽 Browse Menu <svg class="ihb-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+        </button>
         </div>`;
       return;
     }
@@ -3639,15 +3834,12 @@ const StaffChat = {
 
 /* ── MetalButton nav active state management ── */
 (function() {
-  // Override active styling: when a nav-link gets .active, switch outer to mb-active color
+  // Update IHB nav active state when view changes
   const origGo = App._go.bind(App);
   App._go = function(view) {
     origGo(view);
-    // Update metal button active colors
-    document.querySelectorAll('.mb-wrap.nav-link').forEach(el => {
-      const isActive = el.dataset.view === view;
-      el.classList.toggle('mb-active', isActive);
-      el.classList.toggle('mb-default', !isActive);
+    document.querySelectorAll('.nav-ihb.nav-link').forEach(el => {
+      el.classList.toggle('active', el.dataset.view === view);
     });
   };
 
