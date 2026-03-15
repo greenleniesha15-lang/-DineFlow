@@ -189,36 +189,13 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 .waiter-confirm-box p{font-size:13px;color:var(--muted);margin-bottom:10px}
 .waiter-code{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--gold);letter-spacing:6px}
 .phone-confirm-hint{font-size:12px;color:var(--muted);margin-top:6px}
-<div class="tracker-wrap">
 
-  <div class="tracker-lookup">
+const trackBtn = document.getElementById("trackBtn");
 
-    <div class="live-badge">
-      <span class="live-dot"></span>
-      LIVE TRACKING
-    </div>
+trackBtn.addEventListener("click", function () {
 
-    <h2>Track Your Order</h2>
-    <p>Enter your order ID to see the live progress of your meal.</p>
+  const orderId = document.getElementById("orderId").value;
 
-    <form id="trackerForm">
-      <div class="lookup-row">
-        <input 
-          type="text" 
-          id="orderId" 
-          placeholder="Enter Order ID"
-          required
-        >
-
-        <button type="button" id="trackBtn">
-          Track Order
-        </button>
-      </div>
-    </form>
-
-  </div>
-
-</div>
   if(orderId === ""){
     alert("Please enter your order ID");
     return;
@@ -2460,131 +2437,109 @@ const Tracker = {
     this.render();
   },
 
-  _renderLookup(el) {
-    const u = State.currentUser;
-    const myOrders = u ? (State.orders||[]).filter(o=>o.customerId===u.id) : [];
-    const myLive   = u ? (State.liveOrders||[]).filter(o=>o.guestNum===u.guestNum) : [];
+    _renderLookup(el) {
+        const u = State.currentUser;
+        const myOrders = u ? (State.orders || []).filter(o => o.customerId === u.id) : [];
+        const myLive = u ? (State.liveOrders || []).filter(o => o.guestNum === u.guestNum) : [];
 
-    if (!u) {
-      el.innerHTML = `<div class="ot-page" style="text-align:center;padding:60px 20px"><div style="font-size:48px;margin-bottom:16px">📡</div><h2>Track Your Order</h2><p style="color:var(--muted);margin-top:8px">Sign in to track your orders in real time.</p></div>`;
-      return;
-    }
+        if (!u) {
+            el.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--muted)"><div style="font-size:48px;margin-bottom:16px">📡</div><h2>Track Your Order</h2><p style="margin-top:8px">Sign in to track your orders in real time.</p></div>`;
+            return;
+        }
 
-    // If no orders yet — show empty state with CTA
-    if (myOrders.length===0 && myLive.length===0) {
-      el.innerHTML = `
-        <div class="ot-page" style="text-align:center;padding:60px 20px">
-          <div style="font-size:56px;margin-bottom:18px">🛍️</div>
-          <h2 style="margin-bottom:8px">No orders yet</h2>
-          <p style="color:var(--muted);font-size:14px;margin-bottom:24px">Place your first order to track it here in real time.</p>
-          <button class="ihb" onclick="App.go('restaurants')" aria-label="Browse Menu">
-          <span class="ihb-blob"></span>
-          <span class="ihb-label">🍽 Browse Menu</span>
-          <span class="ihb-reveal">🍽 Browse Menu <svg class="ihb-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
-        </button>
-        </div>`;
-      return;
-    }
-
-    // Build the order list — most recent first, active at top
-    const activeOrders  = myOrders.filter(o=>o.approval!=='declined'&&o.status!=='cancelled');
-    const pastOrders    = myOrders.filter(o=>o.approval==='declined'||o.status==='cancelled');
-    const STAGE_MAP = { received:'Order Received', preparing:'Preparing Food', cooking:'Cooking', plating:'Plating', ready:'Ready!' };
-
-    const stageForOrder = (order) => {
-      const live = myLive.find(l=>l.orderId===order.id||l.guestNum===order.guestNum);
-      if (live) return live.stage;
-      if (order.approval==='pending')   return 'received';
-      if (order.approval==='approved')  return 'preparing';
-      return 'received';
-    };
-
-    const renderOrderCard = (o) => {
-      const age   = Math.round((Date.now()-new Date(o.placedAt).getTime())/60000);
-      const ap    = o.approval||'pending';
-      const stage = stageForOrder(o);
-      const live  = myLive.find(l=>l.orderId===o.id||l.guestNum===o.guestNum);
-      const isActive = ap!=='declined' && o.status!=='cancelled';
-      const stageIdx  = STAGES.findIndex(s=>s.key===stage);
-      const pct = live ? Math.min(100, Math.round((1-live.remainingSecs/live.totalSecs)*100)) : (ap==='ready'?100:ap==='approved'?30:5);
-      const minsLeft  = live ? Math.ceil(live.remainingSecs/60) : (ap==='pending'?'—':o.estMins);
-
-      const statusColor = ap==='pending'?'var(--gold)':ap==='approved'?'var(--accent)':ap==='declined'?'var(--red)':'var(--green)';
-      const statusLabel = ap==='pending'?'Waiting for approval':ap==='approved'&&stage==='ready'?'Ready!':ap==='approved'?'In Kitchen':ap==='declined'?'Declined':'Confirmed';
-      const barClass    = pct>=85?'urgent':pct>=50?'warn':'ok';
-
-      return `
-        <div class="oo-card">
-          ${isActive ? `<div class="oo-status-bar ${ap}" style="border-bottom:1px solid var(--border)"><span class="oo-pulse"></span>${statusLabel}${ap==='approved'&&minsLeft!=='—'?' — est. '+minsLeft+' min'+(minsLeft!==1?'s':''):''}  </div>` : `<div class="oo-status-bar declined">❌ ${ap==='declined'?'Order Declined':'Cancelled'}</div>`}
-          <div class="oo-card-top">
-            <div class="oo-emoji">${o.restaurantEmoji||'🌴'}</div>
-            <div class="oo-info">
-              <div class="oo-rest">${o.restaurantName}</div>
-              <div class="oo-meta">${o.id} · ${age<60?age+'m ago':Math.round(age/60)+'h ago'} · Guest #${o.guestNum||'?'}</div>
-            </div>
-            <div class="oo-total">J$${o.total.toLocaleString()}</div>
+        if (myOrders.length === 0 && myLive.length === 0) {
+            el.innerHTML = `
+        <div style="max-width:480px;margin:0 auto;padding:20px 0">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:48px 32px;text-align:center;margin-bottom:16px">
+            <div style="font-size:60px;margin-bottom:18px">🛰️</div>
+            <h2 style="font-size:24px;margin-bottom:10px">Nothing to track yet</h2>
+            <p style="color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:28px">Place your first order and watch it move through 5 live stages — from kitchen to table.</p>
+            <button class="ihb" onclick="App.go('restaurants')" style="margin:0 auto">
+              <span class="ihb-blob"></span>
+              <span class="ihb-label">🍽 Browse Menu</span>
+              <span class="ihb-reveal">🍽 Browse Menu <svg class="ihb-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+            </button>
           </div>
-
-          ${isActive && ap==='approved' ? `
-          <div style="padding:14px 20px;border-bottom:1px solid var(--border)">
-            <div class="ot-progress-label">
-              <span style="font-size:12px;color:var(--muted)">${STAGE_MAP[stage]||'Processing'}</span>
-              <span class="ot-eta">${minsLeft==='—'?'—':minsLeft+' min'+(minsLeft!==1?'s':'')}</span>
-            </div>
-            <div class="ot-bar-track"><div class="ot-bar-fill ${barClass}" style="width:${pct}%"></div></div>
-            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted)">
-              <span>Received</span><span>Preparing</span><span>Cooking</span><span>Plating</span><span>Ready</span>
-            </div>
-          </div>` : ''}
-
-          <div class="oo-items-row">${o.items.map(i=>`<span class="oo-chip">${i.qty}× ${i.name}</span>`).join('')}</div>
-
-          <div class="oo-actions">
-            ${isActive ? `<button class="oo-track-btn" onclick="Tracker.lookupByOrderId('${o.id}')">📡 Live Tracker</button>` : `<button class="oo-reorder-btn" style="flex:1" onclick="App.go('restaurants')">↩ Reorder</button>`}
-            <button class="oo-reorder-btn" onclick="ChatWidget.open()">💬 Message Staff</button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            ${[
+                    { icon: '⏱', title: 'Real-time updates', desc: 'Watch every stage live as the kitchen prepares your meal.' },
+                    { icon: '📱', title: 'SMS alerts', desc: 'Get notified by text when your food is ready.' },
+                    { icon: '💬', title: 'Chat with staff', desc: 'Message our team any time with questions.' },
+                    { icon: '🎯', title: 'Earn rewards', desc: 'Every order earns DineFlow points for free perks.' },
+                ].map(c => `
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px">
+                <div style="font-size:22px;margin-bottom:7px">${c.icon}</div>
+                <div style="font-size:13px;font-weight:600;margin-bottom:4px">${c.title}</div>
+                <div style="font-size:11px;color:var(--muted);line-height:1.5">${c.desc}</div>
+              </div>`).join('')}
           </div>
         </div>`;
-    };
+            return;
+        }
 
-    el.innerHTML = `
+        const activeOrders = myOrders.filter(o => o.approval !== 'declined' && o.status !== 'cancelled');
+        const pastOrders = myOrders.filter(o => o.approval === 'declined' || o.status === 'cancelled');
+
+        const buildCard = (o) => {
+            const age = Math.round((Date.now() - new Date(o.placedAt).getTime()) / 60000);
+            const ap = o.approval || 'pending';
+            const live = myLive.find(l => l.orderId === o.id || l.guestNum === o.guestNum);
+            const stage = live ? live.stage : ap === 'approved' ? 'preparing' : 'received';
+            const pct = live ? Math.min(100, Math.round((1 - live.remainingSecs / live.totalSecs) * 100)) : ap === 'approved' ? 30 : 5;
+            const minsLeft = live ? Math.ceil(live.remainingSecs / 60) : o.estMins;
+            const barClass = pct >= 85 ? 'urgent' : pct >= 50 ? 'warn' : 'ok';
+            const isActive = ap !== 'declined' && o.status !== 'cancelled';
+            const kitStatus = stage === 'ready' ? '✅ Ready for you!' : ap === 'pending' ? '📋 Order received — awaiting kitchen' : '🔥 Being prepared in kitchen';
+
+            return `<div class="oo-card">
+        <div class="oo-status-bar ${ap === 'declined' ? 'declined' : stage === 'ready' ? 'ready' : ap === 'pending' ? 'pending' : 'approved'}">
+          ${ap !== 'declined' && stage !== 'ready' ? '<span class="oo-pulse"></span>' : ''}
+          ${kitStatus}${ap === 'approved' && minsLeft && minsLeft !== 15 ? ' — est. ' + minsLeft + ' min' + (minsLeft !== 1 ? 's' : '') : ''}
+        </div>
+        <div class="oo-card-top">
+          <div class="oo-emoji">${o.restaurantEmoji || '🌴'}</div>
+          <div class="oo-info">
+            <div class="oo-rest">${o.restaurantName}</div>
+            <div class="oo-meta">${o.id} · ${age < 60 ? age + 'm ago' : Math.round(age / 60) + 'h ago'} · Guest #${o.guestNum || '?'}</div>
+          </div>
+          <div class="oo-total">J$${o.total.toLocaleString()}</div>
+        </div>
+        ${ap === 'approved' ? `
+        <div style="padding:12px 20px;border-bottom:1px solid var(--border)">
+          <div class="ot-progress-label">
+            <span style="font-size:12px;color:var(--muted)">${stage.charAt(0).toUpperCase() + stage.slice(1)}</span>
+            <span class="ot-eta">${minsLeft ? ' ' + minsLeft + ' min' : ''}</span>
+          </div>
+          <div class="ot-bar-track"><div class="ot-bar-fill ${barClass}" style="width:${pct}%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted)">
+            <span>Received</span><span>Preparing</span><span>Cooking</span><span>Plating</span><span>Ready</span>
+          </div>
+        </div>`: ''}
+        <div class="oo-items-row">${o.items.map(i => '<span class="oo-chip">' + i.qty + '× ' + i.name + '</span>').join('')}</div>
+        <div class="oo-actions">
+          ${isActive
+                    ? `<button class="oo-track-btn" onclick="Tracker.lookupByOrderId('${o.id}')">📡 Live Tracker</button>`
+                    : `<button class="oo-reorder-btn" style="flex:1" onclick="App.go('restaurants')">↩ Reorder</button>`}
+          <button class="oo-reorder-btn" onclick="ChatWidget.open()">💬 Message Staff</button>
+        </div>
+      </div>`;
+        };
+
+        el.innerHTML = `
       <div class="ot-page">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:8px">
           <div>
             <h2 style="font-size:22px">📡 Track My Order</h2>
             <p style="font-size:13px;color:var(--muted);margin-top:3px">Hi ${u.name} · Guest #${u.guestNum}</p>
           </div>
           <button class="btn-ghost" style="font-size:12px;padding:7px 14px" onclick="App.go('restaurants')">+ New Order</button>
         </div>
-
-        ${activeOrders.length>0 ? activeOrders.map(renderOrderCard).join('') : ''}
-
-        ${myLive.filter(l=>!activeOrders.some(o=>o.id===l.orderId)).map(l=>`
-          <div class="oo-card" style="border-left:4px solid var(--accent)">
-            <div class="oo-status-bar approved" style="border-bottom:1px solid var(--border)">
-              <span class="oo-pulse"></span>In Kitchen — ${Math.ceil(l.remainingSecs/60)} mins left
-            </div>
-            <div class="oo-card-top">
-              <div class="oo-emoji">${o.restaurantEmoji||'🌴'}</div>
-              <div class="oo-info">
-                <div class="oo-rest">${l.restaurant}</div>
-                <div class="oo-meta">${l.id} · Guest #${l.guestNum}</div>
-              </div>
-            </div>
-            <div class="oo-items-row">${l.items.map(i=>`<span class="oo-chip">${i.qty}× ${i.name}</span>`).join('')}</div>
-            <div style="padding:14px 20px;border-bottom:1px solid var(--border)">
-              <div class="ot-bar-track"><div class="ot-bar-fill ok" style="width:${Math.min(100,Math.round((1-l.remainingSecs/l.totalSecs)*100))}%"></div></div>
-            </div>
-            <div class="oo-actions">
-              <button class="oo-track-btn" onclick="Tracker._activeOrderId='live-${l.id}';Tracker.render()">📡 Live Tracker</button>
-              <button class="oo-reorder-btn" onclick="ChatWidget.open()">💬 Message Staff</button>
-            </div>
-          </div>`).join('')}
-
-        ${pastOrders.length>0 ? `
-          <h3 style="font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin:24px 0 12px">Past Orders</h3>
-          ${pastOrders.map(renderOrderCard).join('')}` : ''}
+        ${activeOrders.map(buildCard).join('')}
+        ${pastOrders.length > 0 ? `
+          <h3 style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin:22px 0 12px">Past Orders</h3>
+          ${pastOrders.map(buildCard).join('')}` : ''}
       </div>`;
-  },
+    },
 
   lookup() {
     const val = (document.getElementById('track-input')?.value||'').trim().toUpperCase();
@@ -3605,7 +3560,7 @@ const Profile = {
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:1px solid var(--border);margin-top:4px">
           <span style="font-size:13px">Order notifications</span>
-          <button onclick="Tracker.toggleNotif();this.textContent=State.currentUser?.notifEnabled!==false?'On ✅':'Off 🔕'" 
+          <button onclick="Tracker.toggleNotif();this.textContent=State.currentUser?.notifEnabled!==false?'On ✅':'Off 🔕'"
             style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 14px;border-radius:20px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif">
             ${State.currentUser?.notifEnabled!==false?'On ✅':'Off 🔕'}
           </button>
@@ -4406,3 +4361,7 @@ const StaffChat = {
 </script>
 </body>
 </html>
+
+
+
+
