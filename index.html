@@ -121,10 +121,19 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 .filter-tab{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:5px 13px;border-radius:20px;font-size:12px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
 .filter-tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
 .rest-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}
-.rest-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .2s;overflow:hidden}
-.rest-card:hover{border-color:var(--accent);transform:translateY(-2px)}
-.rest-thumb{height:130px;display:flex;align-items:center;justify-content:center;font-size:52px;background:var(--surface2)}
-.rest-info{padding:14px}
+.rest-card{background:var(--surface);border:1px solid rgba(255,255,255,.07);border-radius:18px;cursor:pointer;transition:all .3s cubic-bezier(.4,0,.2,1);overflow:hidden;position:relative;backdrop-filter:blur(12px)}
+.rest-card:hover{border-color:rgba(249,115,22,.5);transform:translateY(-4px);box-shadow:0 20px 40px rgba(249,115,22,.1)}
+.rest-thumb{position:relative;height:180px;overflow:hidden;background:var(--surface2)}
+.rest-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .5s cubic-bezier(.4,0,.2,1)}
+.rest-card:hover .rest-thumb img{transform:scale(1.08)}
+.rest-thumb-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(13,15,20,.85) 0%,transparent 60%);transition:opacity .3s;opacity:.6}
+.rest-card:hover .rest-thumb-overlay{opacity:.4}
+.rest-thumb-tags{position:absolute;bottom:10px;left:12px;display:flex;gap:6px;flex-wrap:wrap}
+.rest-thumb-emoji{position:absolute;top:10px;right:12px;font-size:24px;background:rgba(13,15,20,.6);backdrop-filter:blur(8px);width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.rest-hover-btn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(13,15,20,.25);backdrop-filter:blur(2px);opacity:0;transition:opacity .3s;pointer-events:none}
+.rest-card:hover .rest-hover-btn{opacity:1}
+.rest-hover-btn span{background:var(--accent);color:#fff;padding:9px 20px;border-radius:9999px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;box-shadow:0 4px 14px rgba(249,115,22,.4)}
+.rest-info{padding:16px}
 .rest-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:5px}
 .rest-meta{display:flex;gap:10px;color:var(--muted);font-size:12px;margin-bottom:10px}
 .tag{background:var(--surface2);border:1px solid var(--border);padding:2px 8px;border-radius:20px;font-size:11px;color:var(--muted)}
@@ -921,6 +930,24 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   height: 100%;
 }
 .nav-inner { position: relative; z-index: 1; }
+
+/* ═══════ MENU TABS (port of shadcn Tabs component) ═══════ */
+.menu-tabs-list{display:inline-flex;align-items:center;background:var(--surface2);border-radius:10px;padding:3px;gap:2px;margin-bottom:20px}
+.menu-tab-trigger{display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;border-radius:8px;padding:7px 18px;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;color:var(--muted);cursor:pointer;border:none;background:transparent;transition:all .2s;outline:none}
+.menu-tab-trigger:hover{color:var(--text)}
+.menu-tab-trigger.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.2);font-weight:600}
+.menu-tab-content{display:none}
+.menu-tab-content.active{display:block}
+.menu-photo-item{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .25s;display:flex;flex-direction:column}
+.menu-photo-item:hover{border-color:rgba(249,115,22,.4);transform:translateY(-2px);box-shadow:0 8px 24px rgba(249,115,22,.1)}
+.menu-photo-thumb{height:140px;overflow:hidden;position:relative;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:40px}
+.menu-photo-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.menu-photo-item:hover .menu-photo-thumb img{transform:scale(1.06)}
+.menu-photo-body{padding:12px 14px;flex:1;display:flex;flex-direction:column;gap:4px}
+.menu-photo-name{font-weight:600;font-size:14px;line-height:1.3}
+.menu-photo-desc{font-size:11px;color:var(--muted);line-height:1.5;flex:1}
+.menu-photo-footer{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 12px;border-top:1px solid var(--border);margin-top:2px}
+.menu-photo-price{font-family:'Syne',sans-serif;font-weight:800;color:var(--accent);font-size:15px}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 </head>
@@ -1308,57 +1335,60 @@ const ADMIN_CREDS = { email: 'greenleniesha@yahoo.com', password: '12345678' };
 const RESTAURANTS = [
   {
     id:'r1', name:'Island Vibes', emoji:'🌴', cuisine:'caribbean',
+    img:'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80',
     rating:'4.9', time:'15–25', price:'$$', tags:['Proteins','Seafood','Starches'],
     desc:'Fresh proteins and classic Caribbean sides, made to order.',
     menuSections:[
       { heading:'Proteins', type:'simple', items:[
-        { id:'m1', name:'Wings (12 Piece)', emoji:'🍗', price:2200, desc:'12 crispy fried chicken wings, seasoned to perfection.' },
-        { id:'m3', name:'Curry Shrimp', emoji:'🦐', price:2500, desc:'Tender shrimp in a rich Jamaican curry sauce.' },
-        { id:'m4', name:'Salmon',       emoji:'🐟', price:3000, desc:'Pan-seared salmon fillet with herb butter.' }
+        { id:'m1', name:'Wings (12 Piece)', emoji:'🍗', price:2200, desc:'12 crispy fried chicken wings, seasoned to perfection.', img:'https://images.unsplash.com/photo-1527477396000-e27163b481c2?w=400&q=80' },
+        { id:'m3', name:'Curry Shrimp', emoji:'🦐', price:2500, desc:'Tender shrimp in a rich Jamaican curry sauce.', img:'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400&q=80' },
+        { id:'m4', name:'Salmon', emoji:'🐟', price:3000, desc:'Pan-seared salmon fillet with herb butter.', img:'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=400&q=80' }
       ]},
       { heading:'Starches', type:'simple', items:[
-        { id:'m5', name:'Rice and Peas',       emoji:'🍚', price:500, desc:'Coconut rice cooked with kidney peas.' },
-        { id:'m6', name:'Fried Plantain',      emoji:'🍌', price:500, desc:'Sweet golden fried plantain slices.' },
-        { id:'m7', name:'Festival',            emoji:'🫓', price:500, desc:'Sweet fried dumplings, crispy outside.' },
-        { id:'m8', name:'Roasted Sweet Potato',emoji:'🍠', price:500, desc:'Oven-roasted sweet potato, lightly seasoned.' }
+        { id:'m5', name:'Rice and Peas', emoji:'🍚', price:500, desc:'Coconut rice cooked with kidney peas.', img:'https://images.unsplash.com/photo-1516684732162-798a0062be99?w=400&q=80' },
+        { id:'m6', name:'Fried Plantain', emoji:'🍌', price:500, desc:'Sweet golden fried plantain slices.', img:'https://images.unsplash.com/photo-1608039755401-742074f0548d?w=400&q=80' },
+        { id:'m7', name:'Festival', emoji:'🫓', price:500, desc:'Sweet fried dumplings, crispy outside.', img:'https://images.unsplash.com/photo-1620921592049-5f228fb9ea07?w=400&q=80' },
+        { id:'m8', name:'Roasted Sweet Potato', emoji:'🍠', price:500, desc:'Oven-roasted sweet potato, lightly seasoned.', img:'https://images.unsplash.com/photo-1596797038530-2c107229654b?w=400&q=80' }
       ]}
     ],
     get menu() { return _buildMenu(this.menuSections); }
   },
   {
     id:'r2', name:'Caribbean Blue', emoji:'🌊', cuisine:'caribbean',
+    img:'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&q=80',
     rating:'4.8', time:'20–30', price:'$$', tags:['Proteins','Grilled','Starches'],
     desc:'Oceanside flavours — bold proteins and Caribbean starches, cooked fresh.',
     menuSections:[
       { heading:'Proteins', type:'simple', items:[
-        { id:'cb1', name:'Jerk Chicken',  emoji:'🍗', price:1800, desc:'Slow-grilled chicken marinated in scotch bonnet jerk seasoning.' },
-        { id:'cb2', name:'Grilled Fish',  emoji:'🐠', price:2000, desc:'Fresh catch of the day, grilled with lime and herbs.' },
-        { id:'cb3', name:'BBQ Pork',      emoji:'🥩', price:2500, desc:'Tender BBQ pork ribs glazed with smoky island sauce.' }
+        { id:'cb1', name:'Jerk Chicken', emoji:'🍗', price:1800, desc:'Slow-grilled chicken marinated in scotch bonnet jerk seasoning.', img:'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=400&q=80' },
+        { id:'cb2', name:'Grilled Fish', emoji:'🐠', price:2000, desc:'Fresh catch of the day, grilled with lime and herbs.', img:'https://images.unsplash.com/photo-1485921325833-c519f76c4927?w=400&q=80' },
+        { id:'cb3', name:'BBQ Pork', emoji:'🥩', price:2500, desc:'Tender BBQ pork ribs glazed with smoky island sauce.', img:'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&q=80' }
       ]},
       { heading:'Starches', type:'simple', items:[
-        { id:'cb4', name:'Rice and Peas',        emoji:'🍚', price:500, desc:'Coconut rice cooked with kidney peas.' },
-        { id:'cb5', name:'Fried Plantain',        emoji:'🍌', price:500, desc:'Sweet golden fried plantain slices.' },
-        { id:'cb6', name:'Festival',              emoji:'🫓', price:500, desc:'Sweet fried dumplings, crispy outside.' },
-        { id:'cb7', name:'Roasted Sweet Potato',  emoji:'🍠', price:500, desc:'Oven-roasted sweet potato, lightly seasoned.' }
+        { id:'cb4', name:'Rice and Peas', img:'https://images.unsplash.com/photo-1516684732162-798a0062be99?w=400&q=80',        emoji:'🍚', price:500, desc:'Coconut rice cooked with kidney peas.' },
+        { id:'cb5', name:'Fried Plantain', img:'https://images.unsplash.com/photo-1608039755401-742074f0548d?w=400&q=80',        emoji:'🍌', price:500, desc:'Sweet golden fried plantain slices.' },
+        { id:'cb6', name:'Festival', img:'https://images.unsplash.com/photo-1620921592049-5f228fb9ea07?w=400&q=80',              emoji:'🫓', price:500, desc:'Sweet fried dumplings, crispy outside.' },
+        { id:'cb7', name:'Roasted Sweet Potato', img:'https://images.unsplash.com/photo-1596797038530-2c107229654b?w=400&q=80',  emoji:'🍠', price:500, desc:'Oven-roasted sweet potato, lightly seasoned.' }
       ]}
     ],
     get menu() { return _buildMenu(this.menuSections); }
   },
   {
     id:'r3', name:'Waterfalls', emoji:'💧', cuisine:'caribbean',
+    img:'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80',
     rating:'4.7', time:'20–30', price:'$', tags:['Proteins','Home-Style','Starches'],
     desc:'Home-style comfort food with fresh proteins and classic sides — made with love.',
     menuSections:[
       { heading:'Proteins', type:'simple', items:[
-        { id:'wf1', name:'Curry Chicken',       emoji:'🍛', price:625,  desc:'Tender chicken simmered in a rich, fragrant curry sauce.' },
-        { id:'wf2', name:'Brown Stew Chicken',  emoji:'🍗', price:650,  desc:'Classic brown stew chicken, slow-cooked to fall-off-the-bone perfection.' },
-        { id:'wf3', name:'Fried Fish',          emoji:'🐟', price:725,  desc:'Crispy golden fried fish, seasoned with local herbs and spices.' }
+        { id:'wf1', name:'Curry Chicken', emoji:'🍛', price:625, desc:'Tender chicken simmered in a rich, fragrant curry sauce.', img:'https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=400&q=80' },
+        { id:'wf2', name:'Brown Stew Chicken', emoji:'🍗', price:650, desc:'Classic brown stew chicken, slow-cooked to fall-off-the-bone perfection.', img:'https://images.unsplash.com/photo-1598103442097-8b74394b95c2?w=400&q=80' },
+        { id:'wf3', name:'Fried Fish', emoji:'🐟', price:725, desc:'Crispy golden fried fish, seasoned with local herbs and spices.', img:'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&q=80' }
       ]},
       { heading:'Starches', type:'simple', items:[
-        { id:'wf4', name:'White Rice',          emoji:'🍚', price:275, desc:'Fluffy steamed white rice.' },
-        { id:'wf5', name:'Mashed Potato',       emoji:'🥔', price:300, desc:'Creamy buttered mashed potato.' },
-        { id:'wf6', name:'Boiled Dumpling',     emoji:'🫓', price:225, desc:'Soft, hand-rolled boiled dumplings.' },
-        { id:'wf7', name:'Macaroni and Cheese', emoji:'🧀', price:325, desc:'Creamy baked macaroni and cheese.' }
+        { id:'wf4', name:'White Rice', img:'https://images.unsplash.com/photo-1516684732162-798a0062be99?w=400&q=80',          emoji:'🍚', price:275, desc:'Fluffy steamed white rice.' },
+        { id:'wf5', name:'Mashed Potato', img:'https://images.unsplash.com/photo-1574484284002-952d92456975?w=400&q=80',       emoji:'🥔', price:300, desc:'Creamy buttered mashed potato.' },
+        { id:'wf6', name:'Boiled Dumpling', img:'https://images.unsplash.com/photo-1563245372-f21724e3856d?w=400&q=80',     emoji:'🫓', price:225, desc:'Soft, hand-rolled boiled dumplings.' },
+        { id:'wf7', name:'Macaroni and Cheese', img:'https://images.unsplash.com/photo-1543339308-43e59d6b73a6?w=400&q=80', emoji:'🧀', price:325, desc:'Creamy baked macaroni and cheese.' }
       ]}
     ],
     get menu() { return _buildMenu(this.menuSections); }
@@ -1819,11 +1849,28 @@ const Menu = {
     const list = filterId==='all' ? RESTAURANTS : RESTAURANTS.filter(r=>r.id===filterId);
     document.getElementById('rest-grid').innerHTML = list.map(r=>`
       <div class="rest-card" onclick="Menu.openDetail('${r.id}')">
-        <div class="rest-thumb">${r.emoji}</div>
+        <!-- Image section — GlassBlogCard style -->
+        <div class="rest-thumb">
+          ${r.img
+            ? `<img src="${r.img}" alt="${r.name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>`
+            : ''}
+          <div class="rest-thumb-fallback" style="${r.img?'display:none;':''}align-items:center;justify-content:center;font-size:52px;height:100%;width:100%">${r.emoji}</div>
+          <div class="rest-thumb-overlay"></div>
+          <div class="rest-thumb-emoji">${r.emoji}</div>
+          <div class="rest-thumb-tags">
+            ${r.tags.slice(0,2).map(tag=>'<span class="tag" style="background:rgba(13,15,20,.65);backdrop-filter:blur(6px);color:#fff;border-color:rgba(255,255,255,.15)">'+tag+'</span>').join('')}
+          </div>
+          <div class="rest-hover-btn"><span>🍽 View Menu</span></div>
+        </div>
+        <!-- Content section -->
         <div class="rest-info">
           <div class="rest-name">${r.name}</div>
-          <div class="rest-meta"><span>⭐ ${r.rating}</span><span>🕐 ${r.time} min</span><span>${r.price}</span></div>
-          <div style="display:flex;gap:5px;flex-wrap:wrap">${r.tags.map(t=>'<span class="tag">'+t+'</span>').join('')}</div>
+          <p style="color:var(--muted);font-size:12px;margin:4px 0 10px;line-height:1.5">${r.desc}</p>
+          <div class="rest-meta" style="border-top:1px solid var(--border);padding-top:10px;margin-top:0">
+            <span>⭐ ${r.rating}</span>
+            <span>🕐 ${r.time} min</span>
+            <span>${r.price}</span>
+          </div>
         </div>
       </div>`).join('');
   },
@@ -1832,12 +1879,27 @@ const Menu = {
     const r = RESTAURANTS.find(x=>x.id===id);
     if (!r) return;
     State.currentRestaurant = r;
-    let html = `<div class="detail-hero"><div class="detail-emoji">${r.emoji}</div>
-      <div><h2>${r.name}</h2>
-      <div class="rest-meta" style="margin:6px 0 12px"><span>⭐ ${r.rating}</span><span>🕐 ${r.time} min</span></div>
-      <p style="color:var(--muted);font-size:13px;margin-bottom:14px">${r.desc}</p>
-      <button onclick="ResModal.open('${r.name}')" style="display:inline-flex;align-items:center;gap:7px;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 16px;border-radius:9px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">📅 Reserve a Table</button>
-      </div></div>`;
+    let html = `
+      ${r.img ? `<div style="height:220px;overflow:hidden;border-radius:18px;position:relative;margin-bottom:20px">
+        <img src="${r.img}" alt="${r.name}" style="width:100%;height:100%;object-fit:cover;transition:transform .4s" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform=''"/>
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(13,15,20,.9) 10%,transparent 65%)"></div>
+        <div style="position:absolute;bottom:16px;left:20px;right:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:32px">${r.emoji}</span>
+            <div>
+              <h2 style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff;margin:0">${r.name}</h2>
+              <div style="display:flex;gap:10px;margin-top:3px"><span style="color:rgba(255,255,255,.7);font-size:12px">⭐ ${r.rating}</span><span style="color:rgba(255,255,255,.7);font-size:12px">🕐 ${r.time} min</span></div>
+            </div>
+          </div>
+          <button onclick="ResModal.open('${r.name}')" style="display:inline-flex;align-items:center;gap:7px;background:var(--accent);border:none;color:#fff;padding:8px 16px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">📅 Reserve</button>
+        </div>
+      </div>` : `<div class="detail-hero"><div class="detail-emoji">${r.emoji}</div><div><h2>${r.name}</h2>
+        <div class="rest-meta" style="margin:6px 0 12px"><span>⭐ ${r.rating}</span><span>🕐 ${r.time} min</span></div>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:14px">${r.desc}</p>
+        <button onclick="ResModal.open('${r.name}')" style="display:inline-flex;align-items:center;gap:7px;background:var(--accent);border:none;color:#fff;padding:8px 16px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">📅 Reserve a Table</button>
+      </div></div>`}
+      ${r.img ? `<p style="color:var(--muted);font-size:13px;margin-bottom:20px">${r.desc}</p>` : ''}
+    `;
 
     r.menuSections.forEach(sec => {
       html += '<h3 class="menu-section-heading">'+sec.heading+'</h3><div class="menu-grid">';
