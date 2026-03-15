@@ -408,7 +408,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   <div class="modal-body">
     <div class="form-group">
       <label class="form-label">Email</label>
-      <input type="email" class="form-input" id="staff-email" placeholder="greenleniesha@yahoo.com"
+      <input type="email" class="form-input" id="staff-email" placeholder="greenleniesha"+"@"+"yahoo.com"
         onkeydown="if(event.key==='Enter')document.getElementById('staff-pw').focus()"/>
     </div>
     <div class="form-group" style="position:relative">
@@ -419,7 +419,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
     </div>
     <div class="error-msg" id="staff-error"></div>
     <button class="btn-primary" onclick="Auth.submitStaff()">Sign In as Staff</button>
-    <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:12px">🔔 All notifications sent to <strong style="color:var(--purple)">greenleniesha@yahoo.com</strong></p>
+    <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:12px">🔔 All notifications sent to <strong style="color:var(--purple)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="0a6d786f6f64666f64636f79626b4a736b62656524696567">[email&#160;protected]</a></strong></p>
   </div>
 </div>
 
@@ -564,16 +564,18 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   </div>
   <div class="admin-tabs" id="staff-tabs">
     <button class="admin-tab active" data-tab="approvals" onclick="Staff.showTab('approvals',this)">✅ Approvals<span id="ap-badge" class="badge" style="display:none">0</span></button>
+    <button class="admin-tab" data-tab="orders" onclick="Staff.showTab('orders',this)">📦 Orders</button>
     <button class="admin-tab" data-tab="kitchen" onclick="Staff.showTab('kitchen',this)">🔥 Kitchen</button>
-    <button class="admin-tab" data-tab="orders" onclick="Staff.showTab('orders',this)">📦 All Orders</button>
-    <button class="admin-tab" data-tab="sms" onclick="Staff.showTab('sms',this)">💬 SMS Log</button>
     <button class="admin-tab" data-tab="notifs" onclick="Staff.showTab('notifs',this)">🔔 Notifications<span id="notif-bell-count" class="badge" style="display:none">0</span></button>
+    <button class="admin-tab" data-tab="sms" onclick="Staff.showTab('sms',this)">💬 SMS Log</button>
+    <button class="admin-tab" data-tab="code" onclick="Staff.showTab('code',this)">🧑‍💻 Code Preview</button>
   </div>
   <div id="staff-approvals"></div>
-  <div id="staff-kitchen" style="display:none"></div>
   <div id="staff-orders" style="display:none"></div>
-  <div id="staff-sms" style="display:none"></div>
+  <div id="staff-kitchen" style="display:none"></div>
   <div id="staff-notifs" style="display:none"></div>
+  <div id="staff-sms" style="display:none"></div>
+  <div id="staff-code" style="display:none"></div>
 </div>
 
 <!-- ═══════════ CART ═══════════ -->
@@ -595,12 +597,12 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 <!-- TOAST -->
 <div class="toast-wrap" id="toast-wrap"></div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 /* ═══════════════════════════════════
    CONSTANTS
 ═══════════════════════════════════ */
-const ADMIN_EMAIL = 'greenleniesha@yahoo.com';
-const ADMIN_CREDS = { email: 'greenleniesha@yahoo.com', password: '12345678' };
+const ADMIN_EMAIL = 'greenleniesha'+'@'+'yahoo.com';
+const ADMIN_CREDS = { email: 'greenleniesha'+'@'+'yahoo.com', password: '12345678' };
 
 const RESTAURANTS = [
   {
@@ -1151,6 +1153,9 @@ const Cart = {
     this.close();
     Loyalty.updatePts();
 
+    // ── Auto-add to kitchen immediately as pending approval ──
+    Staff._addToKitchenPending(newOrder);
+
     // ── SMS directly to the GUEST ──
     if (guestPhone) {
       SMS.send(guestPhone,
@@ -1507,7 +1512,7 @@ const Tracker = {
   _tick() {
     let changed=false;
     (State.liveOrders||[]).forEach(o=>{
-      if (o.paused||o.stage==='ready') return;
+      if (o.paused||o.stage==='ready'||o.approvalPending) return;
       if (o.remainingSecs>0) {
         o.remainingSecs--; changed=true;
         const pct=1-o.remainingSecs/o.totalSecs;
@@ -1640,15 +1645,16 @@ const Staff = {
         b.classList.toggle('active', b.dataset.tab===tab);
       });
     }
-    ['approvals','kitchen','orders','sms','notifs'].forEach(t=>{
+    ['approvals','orders','kitchen','notifs','sms','code'].forEach(t=>{
       const el=document.getElementById('staff-'+t);
       if(el) el.style.display=t===tab?'block':'none';
     });
     if (tab==='approvals') this.renderApprovals();
-    if (tab==='kitchen')   this.renderKitchen();
     if (tab==='orders')    this.renderAllOrders();
-    if (tab==='sms')       this.renderSMS();
+    if (tab==='kitchen')   this.renderKitchen();
     if (tab==='notifs')    this.renderNotifs();
+    if (tab==='sms')       this.renderSMS();
+    if (tab==='code')      this.renderCode();
   },
 
   renderApprovals() {
@@ -1727,14 +1733,21 @@ const Staff = {
 
   _addToKitchen(order) {
     const already=(State.liveOrders||[]).find(o=>o.orderId===order.id);
-    if (already) return;
+    if (already) {
+      // Unlock the pending-approval kitchen card
+      already.approvalPending=false; already.paused=false;
+      if (already.stage==='pending_approval') already.stage='received';
+      State.liveOrders=[...(State.liveOrders||[])];
+      if (!Tracker._ticker) Tracker._ticker=setInterval(()=>Tracker._tick(),1000);
+      return;
+    }
     const live = {
       id:'LT-'+order.id, orderId:order.id,
       guestNum:order.guestNum, guestName:order.customer, phone:order.phone,
       tableNo:'T-'+String(order.guestNum||1).padStart(2,'0'),
       restaurant:order.restaurantName, items:order.items,
       totalSecs:order.estMins*60, remainingSecs:order.estMins*60,
-      stage:'received', paused:false,
+      stage:'received', paused:false, approvalPending:false,
       placedAt:order.placedAt, delayFlag:false, notifiedAlmost:false,
       waiterConfirmed:true
     };
@@ -1742,15 +1755,48 @@ const Staff = {
     if (!Tracker._ticker) Tracker._ticker=setInterval(()=>Tracker._tick(),1000);
   },
 
+  _addToKitchenPending(order) {
+    const already=(State.liveOrders||[]).find(o=>o.orderId===order.id);
+    if (already) return;
+    const live = {
+      id:'LT-'+order.id, orderId:order.id,
+      guestNum:order.guestNum, guestName:order.customer, phone:order.phone,
+      tableNo:'T-'+String(order.guestNum||1).padStart(2,'0'),
+      restaurant:order.restaurantName, items:order.items,
+      totalSecs:order.estMins*60, remainingSecs:order.estMins*60,
+      stage:'pending_approval', paused:true, approvalPending:true,
+      placedAt:order.placedAt, delayFlag:false, notifiedAlmost:false,
+      waiterConfirmed:false
+    };
+    State.liveOrders=[live,...(State.liveOrders||[])];
+  },
+
   renderKitchen() {
     const el=document.getElementById('staff-kitchen');
     const live=State.liveOrders||[];
-    const active=live.filter(o=>o.stage!=='ready');
-    const done=live.filter(o=>o.stage==='ready');
+    const pending=live.filter(o=>o.approvalPending);
+    const active=live.filter(o=>!o.approvalPending&&o.stage!=='ready');
+    const done=live.filter(o=>!o.approvalPending&&o.stage==='ready');
     const stageKeys=STAGES.map(s=>s.key);
 
     const fmtTime=(s)=>{ if(s<=0) return '0:00'; return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
     const urgClass=(o)=>{ const p=1-o.remainingSecs/o.totalSecs; return o.delayFlag||p>=0.85?'urgent':p>=0.6?'warn':'ok'; };
+
+    const pendingCard=(o)=>`
+      <div class="k-card" style="opacity:.7;border-color:var(--gold)">
+        <div class="k-head" style="background:rgba(245,158,11,.08)">
+          <div><div class="k-table" style="color:var(--gold)">⏳ Awaiting Approval</div>
+          <div class="k-order-id">Guest #${o.guestNum} · ${o.tableNo} · ${o.id}</div></div>
+          <div style="font-size:11px;color:var(--gold);font-weight:700;background:rgba(245,158,11,.12);padding:3px 8px;border-radius:20px">PENDING</div>
+        </div>
+        <div class="k-body">
+          <div class="k-items">${o.items.map(i=>i.qty+'× '+i.name).join(' · ')}</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Kitchen is locked — approve to start cooking</div>
+          <div class="k-btns">
+            <button class="k-btn primary" onclick="Staff.quickApprove('${o.orderId}')">✅ Approve & Start</button>
+            <button class="k-btn" style="border-color:rgba(239,68,68,.3);color:var(--red)" onclick="Staff.quickDecline('${o.orderId}')">❌ Decline</button>
+          </div>
+        </div></div>`;
 
     const kCard=(o)=>{
       const stIdx=stageKeys.indexOf(o.stage);
@@ -2017,6 +2063,11 @@ const ResModal={
    INIT
 ═══════════════════════════════════ */
 (function init() {
+  // Populate email display elements at runtime (avoids Cloudflare email obfuscation)
+  const hintEl = document.getElementById('staff-modal-email-hint');
+  if (hintEl) hintEl.textContent = ADMIN_EMAIL;
+
+  // Restore session if persisted
   const u = State.currentUser;
   if (u && u.role === 'customer') {
     document.getElementById('login-overlay').style.display = 'none';
@@ -2030,12 +2081,59 @@ const ResModal={
     document.getElementById('login-overlay').style.display = 'flex';
   }
 
-  if ((State.liveOrders||[]).some(o=>o.stage!=='ready'&&!o.paused)) {
+  // Start tracker ticker if there are active live orders
+  if ((State.liveOrders||[]).some(o=>o.stage!=='ready'&&!o.paused&&!o.approvalPending)) {
     Tracker._ticker = setInterval(()=>Tracker._tick(), 1000);
   }
 
   Nav._update();
 })();
+
+// ── Quick approve/decline from Kitchen tab ──
+Staff.quickApprove = function(orderId) {
+  Staff.approve(orderId);
+  Staff.showTab('kitchen', null);
+};
+Staff.quickDecline = function(orderId) {
+  Staff.decline(orderId);
+  Staff.showTab('kitchen', null);
+};
+
+// ── Code Preview renderer ──
+Staff.renderCode = function() {
+  const el = document.getElementById('staff-code');
+  if (!el) return;
+  const src = document.documentElement.outerHTML;
+  const escaped = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div>
+        <h3 style="font-size:17px">🧑‍💻 Code Preview</h3>
+        <p style="color:var(--muted);font-size:12px;margin-top:3px">Full source of this DineFlow build — read-only snapshot</p>
+      </div>
+      <button onclick="Staff._copyCode()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">📋 Copy All</button>
+    </div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);overflow:auto;max-height:70vh">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface2);z-index:10">
+        <span style="font-size:11px;color:var(--muted);font-family:monospace">dineflow.html &nbsp;·&nbsp; ${src.length.toLocaleString()} chars</span>
+        <div style="display:flex;gap:5px">
+          <span style="width:10px;height:10px;border-radius:50%;background:var(--red);display:inline-block"></span>
+          <span style="width:10px;height:10px;border-radius:50%;background:var(--gold);display:inline-block"></span>
+          <span style="width:10px;height:10px;border-radius:50%;background:var(--green);display:inline-block"></span>
+        </div>
+      </div>
+      <pre style="padding:16px;font-size:11px;line-height:1.7;font-family:'Courier New',monospace;color:#a8b3cf;white-space:pre;tab-size:2;overflow-x:auto;margin:0">${escaped}</pre>
+    </div>`;
+};
+
+Staff._copyCode = function() {
+  const src = document.documentElement.outerHTML;
+  navigator.clipboard.writeText(src).then(()=>{
+    Toast.show('📋 Full source copied to clipboard!','success');
+  }).catch(()=>{
+    Toast.show('⚠️ Copy failed — try selecting manually','warn');
+  });
+};
 </script>
 </body>
 </html>
