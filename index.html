@@ -176,6 +176,9 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 .confirm-icon{font-size:56px;margin-bottom:16px}
 .confirm-order-num{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;color:var(--accent);letter-spacing:2px;margin:12px 0}
 .confirm-guest{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);padding:6px 16px;border-radius:20px;font-size:13px;margin-bottom:20px}
+.confirm-steps{display:flex;flex-direction:column;gap:8px;margin:20px 0;text-align:left}
+.confirm-step{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);padding:8px 12px;border-radius:9px;background:var(--surface2)}
+.confirm-step.active-step{color:var(--accent);background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.2)}
 .waiter-confirm-box{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.3);border-radius:var(--r);padding:16px;margin:16px 0}
 .waiter-confirm-box p{font-size:13px;color:var(--muted);margin-bottom:10px}
 .waiter-code{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--gold);letter-spacing:6px}
@@ -203,22 +206,6 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 .stage-label{font-size:11px;color:var(--muted)}
 .stage-node.done .stage-label,.stage-node.active .stage-label{color:var(--text)}
 
-/* ── STAGE DETAIL CARD ── */
-.stage-detail-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin:12px 0;display:flex;align-items:center;gap:14px}
-.stage-detail-icon{font-size:32px;flex-shrink:0}
-.stage-detail-name{font-family:'Syne',sans-serif;font-size:16px;font-weight:700}
-.stage-detail-desc{font-size:12px;color:var(--muted);margin-top:2px}
-.stage-timeline{display:flex;flex-direction:column;gap:6px;margin:10px 0}
-.stage-timeline-row{display:flex;align-items:center;gap:10px;font-size:12px;padding:7px 10px;border-radius:8px}
-.stage-timeline-row.done{color:var(--green);background:rgba(34,197,94,.05)}
-.stage-timeline-row.active{color:var(--accent);background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.2);font-weight:500}
-.stage-timeline-row.upcoming{color:var(--muted);background:transparent}
-.stage-tl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.stage-tl-dot.done{background:var(--green)}
-.stage-tl-dot.active{background:var(--accent);animation:pulse 1.4s infinite}
-.stage-tl-dot.upcoming{background:var(--surface2);border:1px solid var(--border)}
-.stage-tl-time{margin-left:auto;font-size:11px;color:var(--muted)}
-
 /* COUNTDOWN RING */
 .ring-wrap{display:flex;flex-direction:column;align-items:center;margin:20px 0}
 .ring-svg{transform:rotate(-90deg)}
@@ -237,9 +224,6 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 .alert-almost{background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.25);color:var(--gold)}
 .alert-ready{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.25);color:var(--green)}
 .alert-info{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.25);color:var(--blue)}
-
-/* SMS NOTIFICATION BANNER */
-.sms-notif-banner{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.25);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--blue);display:flex;align-items:center;gap:8px;margin-bottom:12px}
 
 /* ORDER CARD (customer) */
 .order-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:12px;transition:border-color .2s}
@@ -278,6 +262,10 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 .ap-items{padding:0 16px 10px;display:flex;flex-wrap:wrap;gap:5px}
 .ap-chip{background:var(--surface2);border:1px solid var(--border);padding:3px 9px;border-radius:20px;font-size:12px}
 .ap-actions{display:flex;gap:8px;padding:10px 16px;border-top:1px solid var(--border)}
+.btn-approve{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(34,197,94,.3);background:rgba(34,197,94,.1);color:var(--green);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-approve:hover{background:rgba(34,197,94,.2)}
+.btn-decline{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(239,68,68,.25);background:rgba(239,68,68,.08);color:var(--red);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-decline:hover{background:rgba(239,68,68,.18)}
 .ap-status{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase}
 .ap-status.approved{background:rgba(34,197,94,.12);color:var(--green)}
 .ap-status.declined{background:rgba(239,68,68,.1);color:var(--red)}
@@ -404,7 +392,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
   <div class="modal-body">
     <div class="form-group">
       <label class="form-label">Email</label>
-      <input type="email" class="form-input" id="staff-email" placeholder="greenleniesha"+"@"+"yahoo.com"
+      <input type="email" class="form-input" id="staff-email" placeholder="greenleniesha@yahoo.com"
         onkeydown="if(event.key==='Enter')document.getElementById('staff-pw').focus()"/>
     </div>
     <div class="form-group" style="position:relative">
@@ -415,7 +403,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
     </div>
     <div class="error-msg" id="staff-error"></div>
     <button class="btn-primary" onclick="Auth.submitStaff()">Sign In as Staff</button>
-    <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:12px">🔔 All notifications sent to <strong style="color:var(--purple)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="0a6d786f6f64666f64636f79626b4a736b62656524696567">[email&#160;protected]</a></strong></p>
+    <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:12px">🔔 All notifications sent to <strong style="color:var(--purple)">greenleniesha@yahoo.com</strong></p>
   </div>
 </div>
 
@@ -490,7 +478,7 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
     </div>
     <div class="feature-card" onclick="App.go('myorders')">
       <div class="feat-icon">🧾</div><h3>My Orders</h3>
-      <p>See all your orders, live kitchen stage, and order history.</p>
+      <p>See all your orders, approval status, and order history.</p>
       <span class="feat-link">View orders →</span>
     </div>
     <div class="feature-card" onclick="App.go('loyalty')">
@@ -559,15 +547,17 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
     <button onclick="Auth.changeGuest()" style="margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:7px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif">Sign out</button>
   </div>
   <div class="admin-tabs" id="staff-tabs">
-    <button class="admin-tab active" data-tab="orders" onclick="Staff.showTab('orders',this)">📦 Orders</button>
+    <button class="admin-tab active" data-tab="approvals" onclick="Staff.showTab('approvals',this)">✅ Approvals<span id="ap-badge" class="badge" style="display:none">0</span></button>
     <button class="admin-tab" data-tab="kitchen" onclick="Staff.showTab('kitchen',this)">🔥 Kitchen</button>
-    <button class="admin-tab" data-tab="notifs" onclick="Staff.showTab('notifs',this)">🔔 Notifications<span id="notif-bell-count" class="badge" style="display:none">0</span></button>
+    <button class="admin-tab" data-tab="orders" onclick="Staff.showTab('orders',this)">📦 All Orders</button>
     <button class="admin-tab" data-tab="sms" onclick="Staff.showTab('sms',this)">💬 SMS Log</button>
+    <button class="admin-tab" data-tab="notifs" onclick="Staff.showTab('notifs',this)">🔔 Notifications<span id="notif-bell-count" class="badge" style="display:none">0</span></button>
   </div>
-  <div id="staff-orders"></div>
+  <div id="staff-approvals"></div>
   <div id="staff-kitchen" style="display:none"></div>
-  <div id="staff-notifs" style="display:none"></div>
+  <div id="staff-orders" style="display:none"></div>
   <div id="staff-sms" style="display:none"></div>
+  <div id="staff-notifs" style="display:none"></div>
 </div>
 
 <!-- ═══════════ CART ═══════════ -->
@@ -589,12 +579,12 @@ h1,h2,h3,h4{font-family:'Syne',sans-serif}
 <!-- TOAST -->
 <div class="toast-wrap" id="toast-wrap"></div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 /* ═══════════════════════════════════
    CONSTANTS
 ═══════════════════════════════════ */
-const ADMIN_EMAIL = 'greenleniesha'+'@'+'yahoo.com';
-const ADMIN_CREDS = { email: 'greenleniesha'+'@'+'yahoo.com', password: '12345678' };
+const ADMIN_EMAIL = 'greenleniesha@yahoo.com';
+const ADMIN_CREDS = { email: 'greenleniesha@yahoo.com', password: '12345678' };
 
 const RESTAURANTS = [
   {
@@ -603,8 +593,8 @@ const RESTAURANTS = [
     desc:'Fresh proteins and classic Caribbean sides, made to order.',
     menuSections:[
       { heading:'Protein', type:'select', items:[
-        { id:'m1a', name:'Wings (6 pcs)', emoji:'🍗', price:1500, desc:'Crispy fried chicken wings — 6 piece.' },
-        { id:'m1b', name:'Wings (12 pcs)', emoji:'🍗', price:2200, desc:'Crispy fried chicken wings — 12 piece.' },
+        { id:'m1', name:'Wings', emoji:'🍗', desc:'Crispy fried chicken wings.',
+          variants:[{label:'6 Wings',price:1500},{label:'12 Piece',price:2200}] },
         { id:'m3', name:'Curry Shrimp', emoji:'🦐', price:2500, desc:'Tender shrimp in rich Jamaican curry.' },
         { id:'m4', name:'Salmon', emoji:'🐟', price:3000, desc:'Pan-seared salmon fillet with herb butter.' }
       ]},
@@ -618,7 +608,15 @@ const RESTAURANTS = [
       const out = [];
       this.menuSections.forEach(sec => {
         sec.items.forEach(item => {
-          out.push({ id:item.id, name:item.name, emoji:item.emoji, price:item.price, desc:item.desc });
+          if (item.variants) {
+            item.variants.forEach(v => out.push({
+              id: item.id+'_'+v.label.replace(/\s+/g,'_'),
+              name: item.name+' — '+v.label, emoji: item.emoji, price: v.price, desc: item.desc,
+              baseId: item.id, variantLabel: v.label
+            }));
+          } else {
+            out.push({ id:item.id, name:item.name, emoji:item.emoji, price:item.price, desc:item.desc });
+          }
         });
       });
       return out;
@@ -627,20 +625,15 @@ const RESTAURANTS = [
 ];
 
 const STAGES = [
-  { key:'received',  label:'Order\nReceived',   icon:'📋', color:'var(--blue)',
-    desc:'Your order has been received and is queued.' },
-  { key:'preparing', label:'Preparing\nFood',   icon:'👨‍🍳', color:'var(--accent)',
-    desc:'The kitchen is prepping all your ingredients.' },
-  { key:'cooking',   label:'Cooking',           icon:'🔥', color:'var(--accent2)',
-    desc:'Your food is on the heat — smells amazing!' },
-  { key:'plating',   label:'Plating /\nPacking', icon:'🍽', color:'var(--purple)',
-    desc:'Your meal is being plated and finished.' },
-  { key:'ready',     label:'Ready!',            icon:'✅', color:'var(--green)',
-    desc:'Order is ready. Your waiter is on the way!' },
+  { key:'received',  label:'Order\nReceived',  icon:'📋', color:'var(--blue)'  },
+  { key:'preparing', label:'Preparing\nFood',  icon:'👨‍🍳', color:'var(--accent)' },
+  { key:'cooking',   label:'Cooking',          icon:'🔥', color:'var(--accent2)'},
+  { key:'plating',   label:'Plating /\nPacking',icon:'🍽', color:'var(--purple)' },
+  { key:'ready',     label:'Ready!',           icon:'✅', color:'var(--green)'  },
 ];
 
 /* ═══════════════════════════════════
-   STATE
+   STATE (persistent across soft refreshes via sessionStorage)
 ═══════════════════════════════════ */
 const State = (() => {
   const KEY = 'df_state_v2';
@@ -648,10 +641,11 @@ const State = (() => {
     role: null, currentUser: null, guestCounter: 0,
     points: 0, cart: [], orders: [], reservations: [],
     smsLog: [], notifications: [],
-    liveOrders: []
+    liveOrders: [] // kitchen queue
   };
   let _s = defaults;
 
+  // Seed some demo kitchen orders
   const seedLive = () => {
     if (_s.liveOrders.length > 0) return;
     const now = Date.now();
@@ -682,7 +676,11 @@ const State = (() => {
   load();
 
   return new Proxy(_s, {
-    set(target, prop, val) { target[prop] = val; save(); return true; },
+    set(target, prop, val) {
+      target[prop] = val;
+      save();
+      return true;
+    },
     get(target, prop) { return target[prop]; }
   });
 })();
@@ -741,7 +739,6 @@ const Notify = {
   }
 };
 
-/* ── SMS helper: sends to the GUEST's phone ── */
 const SMS = {
   send(phone, message) {
     const entry = { id:'S'+Date.now(), phone, message, sentAt:new Date().toISOString() };
@@ -749,14 +746,6 @@ const SMS = {
     State.smsLog = [entry, ...State.smsLog];
     console.log('[SMS to '+phone+']:', message);
     Toast.show('📱 SMS sent to '+phone, 'info');
-  },
-
-  /* Send a status update specifically to the guest who placed an order */
-  notifyGuest(order, message) {
-    const phone = order.phone || (State.currentUser?.id === order.customerId ? State.currentUser?.phone : null);
-    if (phone) {
-      this.send(phone, message);
-    }
   }
 };
 
@@ -773,6 +762,7 @@ const Auth = {
     if (!name) { errEl.textContent='Please enter your name.'; errEl.style.display='block'; return; }
     errEl.style.display = 'none';
 
+    // Persist guest counter in State
     State.guestCounter = (State.guestCounter || 0) + 1;
     const guestNum = State.guestCounter;
     const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2) || name[0].toUpperCase();
@@ -786,9 +776,9 @@ const Auth = {
     App.go('home');
     Toast.show('👋 Welcome '+name+'! You are Guest #'+guestNum, 'success');
 
-    // Welcome SMS to the GUEST
+    // Send welcome SMS if phone provided
     if (phone) {
-      SMS.send(phone, '🍽 Welcome to DineFlow, '+name+'! You are Guest #'+guestNum+'. Place your order and track it live. We\'ll SMS you at every stage!');
+      SMS.send(phone, 'Welcome to DineFlow, '+name+'! You are Guest #'+guestNum+'. Place your order and track it live.');
     }
   },
 
@@ -802,12 +792,14 @@ const Auth = {
     pill.textContent = '#'+u.guestNum;
     pill.style.display = '';
 
+    // Show customer nav links
     ['tracker-link','myorders-link'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = '';
     });
     document.querySelectorAll('[data-view="orders"]').forEach(el=>el.style.display='');
 
+    // Bind all nav links
     document.querySelectorAll('.nav-link').forEach(btn=>{
       btn.onclick = () => App.go(btn.dataset.view);
     });
@@ -859,6 +851,7 @@ const Auth = {
   _applyStaffUI() {
     const staffBtn = document.getElementById('staff-nav-btn');
     if (staffBtn){ staffBtn.textContent='✓ Staff'; staffBtn.style.cursor='default'; staffBtn.onclick=null; }
+    // Remove customer links, add staff dashboard link
     ['tracker-link','myorders-link'].forEach(id=>{
       const el=document.getElementById(id); if(el) el.style.display='none';
     });
@@ -870,6 +863,7 @@ const Auth = {
       btn.textContent='🛠 Dashboard';
       navLinks.appendChild(btn);
     }
+    // Bell
     const navUser = document.querySelector('.nav-user');
     if (!document.getElementById('notif-bell')) {
       const bell = document.createElement('div');
@@ -964,6 +958,25 @@ const Menu = {
     r.menuSections.forEach(sec => {
       html += '<h3 class="menu-section-heading">'+sec.heading+'</h3><div class="menu-grid">';
       sec.items.forEach(item => {
+        if (item.variants) {
+          const selId = 'sel-'+r.id+'-'+item.id;
+          const priceId = 'price-'+r.id+'-'+item.id;
+          html += `<div class="menu-item" style="flex-direction:column">
+            <div style="display:flex;gap:12px;margin-bottom:10px">
+              <div class="menu-emoji">${item.emoji}</div>
+              <div><div class="menu-name">${item.name}</div><div class="menu-desc">${item.desc}</div></div>
+            </div>
+            <div style="position:relative;margin-bottom:8px">
+              <select id="${selId}" class="form-select" style="appearance:none;padding-right:28px;font-size:13px"
+                onchange="Menu.updateVariantPrice('${selId}','${priceId}',${JSON.stringify(item.variants)})">
+                ${item.variants.map(v=>`<option value="${v.label}" data-price="${v.price}">${v.label} — J$${v.price.toLocaleString()}</option>`).join('')}
+              </select><span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--muted)">▾</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span class="menu-price" id="${priceId}">J$${item.variants[0].price.toLocaleString()}</span>
+              <button class="add-btn" onclick="Cart.addVariant('${r.id}','${item.id}','${selId}',${JSON.stringify(item.variants)},'${item.emoji}','${item.desc.replace(/'/g,"\\'")}')">+</button>
+            </div></div>`;
+        } else {
           html += `<div class="menu-item" style="display:flex;gap:12px">
             <div class="menu-emoji">${item.emoji}</div>
             <div class="menu-info" style="flex:1">
@@ -973,6 +986,7 @@ const Menu = {
                 <span class="menu-price">J$${item.price.toLocaleString()}</span>
                 <button class="add-btn" onclick="Cart.add('${r.id}','${item.id}')">+</button>
               </div></div></div>`;
+        }
       });
       html += '</div>';
     });
@@ -981,7 +995,11 @@ const Menu = {
     App.go('detail');
   },
 
-
+  updateVariantPrice(selId, priceId, variants) {
+    const sel = document.getElementById(selId); if(!sel) return;
+    const v = variants.find(x=>x.label===sel.value);
+    const el = document.getElementById(priceId); if(v&&el) el.textContent='J$'+v.price.toLocaleString();
+  }
 };
 
 /* ═══════════════════════════════════
@@ -1003,7 +1021,22 @@ const Cart = {
     this.render();
   },
 
-
+  addVariant(restId, baseId, selId, variants, emoji, desc) {
+    const r = RESTAURANTS.find(x=>x.id===restId);
+    const sel = document.getElementById(selId);
+    const label = sel ? sel.value : variants[0].label;
+    const v = variants.find(x=>x.label===label)||variants[0];
+    const cartId = baseId+'_'+label.replace(/\s+/g,'_');
+    const name = r.menuSections.flatMap(s=>s.items).find(i=>i.id===baseId)?.name||'Wings';
+    const fullName = name+' — '+label;
+    const item = { id:cartId, name:fullName, emoji, price:v.price, desc, qty:1, restId, restName:r.name };
+    const ex = State.cart.find(x=>x.id===cartId);
+    if (ex) ex.qty++;
+    else State.cart = [...State.cart, item];
+    this.updateFAB();
+    Toast.show('✓ '+fullName+' added','success');
+    this.render();
+  },
 
   remove(itemId) {
     const cart = State.cart;
@@ -1045,13 +1078,11 @@ const Cart = {
       </div>`).join('');
 
     const sub = this.subtotal();
-    const phone = State.currentUser?.phone || '';
     cf.innerHTML = `
       <div class="phone-field">
-        <label class="form-label">📱 Your phone for SMS order updates</label>
+        <label class="form-label">📱 Phone for SMS updates</label>
         <input type="tel" class="form-input" id="cart-phone" placeholder="+1 876 555 0100"
-          value="${phone}" style="margin-bottom:4px"/>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:10px">📲 You'll receive SMS alerts at each stage of your order.</div>
+          value="${State.currentUser?.phone||''}" style="margin-bottom:10px"/>
       </div>
       <div class="cart-total-row"><span>Total</span><span style="color:var(--accent)">J$${sub.toLocaleString()}</span></div>
       <button class="btn-primary" onclick="Cart.checkout()">Place Order — J$${sub.toLocaleString()}</button>`;
@@ -1061,9 +1092,9 @@ const Cart = {
     if (State.cart.length===0) return;
     const u = State.currentUser || { name:'Guest', id:'g0', guestNum:0, phone:null };
 
-    // Save phone from cart input back to user profile
+    // Save phone from cart
     const phoneInput = document.getElementById('cart-phone');
-    if (phoneInput && phoneInput.value.trim() && State.currentUser) {
+    if (phoneInput && phoneInput.value && State.currentUser) {
       State.currentUser = { ...State.currentUser, phone: phoneInput.value.trim() };
     }
 
@@ -1073,17 +1104,22 @@ const Cart = {
     const restId = State.cart[0].restId;
     const rest = RESTAURANTS.find(x=>x.id===restId);
     const total = this.subtotal();
-    const guestPhone = State.currentUser?.phone || u.phone;
+
+    // Waiter confirm code (4-digit)
+    const confirmCode = String(1000+Math.floor(Math.random()*9000));
 
     const newOrder = {
       id: orderId, orderNum,
       restaurantId: restId, restaurantName: rest?.name||'Island Vibes',
       customer: u.name, customerId: u.id,
-      guestNum: u.guestNum, phone: guestPhone,
+      guestNum: u.guestNum, phone: State.currentUser?.phone || u.phone,
       items: State.cart.map(x=>({name:x.name,qty:x.qty,price:x.price})),
-      total, status:'active',
+      total, status:'pending', approval:'pending',
       placedAt:new Date().toISOString(),
       points: Math.floor(total/100),
+      confirmCode,
+      guestConfirmed: false,
+      waiterConfirmed: false,
       estMins: 15,
     };
 
@@ -1094,22 +1130,24 @@ const Cart = {
     this.close();
     Loyalty.updatePts();
 
-    // ── Send order directly to kitchen (no approval step) ──
-    Staff._addToKitchen(newOrder);
-
-    // ── SMS directly to the GUEST ──
-    if (guestPhone) {
-      SMS.send(guestPhone,
-        '🍽 Hi '+u.name+'! Your order '+orderId+' at '+rest?.name+' is in the kitchen now! Est. '+newOrder.estMins+' mins. We\'ll text you at every stage! 🔥'
-      );
+    // SMS to customer
+    if (newOrder.phone) {
+      SMS.send(newOrder.phone, 'Hi '+u.name+'! Order '+orderId+' placed at '+rest?.name+'. Est: '+newOrder.estMins+' mins. Track at DineFlow.');
     }
+    // Staff notification
+    Notify.send('📦 New Order Pending: '+orderId,
+      'Guest #'+u.guestNum+' — '+u.name+'\nPhone: '+(newOrder.phone||'N/A')+'\nItems: '+newOrder.items.map(i=>i.qty+'× '+i.name).join(', ')+'\nTotal: J$'+total.toLocaleString()+'\nTime: '+new Date().toLocaleString(),'order');
 
-    // Staff notification (internal only)
-    Notify.send('📦 New Order: '+orderId,
-      'Guest #'+u.guestNum+' — '+u.name+'\nPhone: '+(guestPhone||'N/A')+'\nItems: '+newOrder.items.map(i=>i.qty+'× '+i.name).join(', ')+'\nTotal: J$'+total.toLocaleString()+'\nTime: '+new Date().toLocaleString(),'order');
-
+    // Show order confirmation & badge
     const mob = document.getElementById('mo-badge');
     if (mob) { mob.style.display='inline-flex'; mob.textContent='!'; }
+
+    // Update staff approval badge
+    const apBadge = document.getElementById('ap-badge');
+    if (apBadge) {
+      const pCount = (State.orders||[]).filter(o=>o.approval==='pending').length;
+      apBadge.textContent=pCount; apBadge.style.display=pCount>0?'inline-flex':'none';
+    }
 
     App.go('confirm');
     Confirmation.show(newOrder);
@@ -1128,20 +1166,17 @@ const Confirmation = {
         <h2 style="font-size:18px;margin-bottom:6px">Order Placed!</h2>
         <div class="confirm-order-num">${order.id}</div>
         <div class="confirm-guest">👤 ${order.customer} &nbsp;·&nbsp; <span style="color:var(--accent);font-weight:700">Guest #${order.guestNum}</span></div>
-        <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Your order is in the kitchen! Show this number to your waiter.</p>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Your order number matches your guest number — show this to your waiter.</p>
 
-        ${order.phone ? `
-        <div class="sms-notif-banner">
-          📱 SMS updates will be sent to <strong>${order.phone}</strong> at each stage of your order.
-        </div>` : `
-        <div style="background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--gold);margin-bottom:12px">
-          ⚠️ No phone number saved — you won't receive SMS updates. Add a phone in My Orders.
-        </div>`}
+        <div class="waiter-confirm-box">
+          <p>🤝 <strong>Both you and your waiter must confirm</strong> this order number to proceed.</p>
+          <div class="waiter-code">${order.confirmCode}</div>
+          <div class="phone-confirm-hint">Show this code to your waiter for dual confirmation</div>
+        </div>
 
-        <div style="background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.25);border-radius:var(--r);padding:16px;margin:16px 0;text-align:center">
-          <div style="font-size:28px;margin-bottom:8px">🔥</div>
-          <div style="font-size:14px;font-weight:600;color:var(--green)">Your order is in the kitchen!</div>
-          <div style="font-size:13px;color:var(--muted);margin-top:6px">Estimated time: <strong style="color:var(--text)">${order.estMins} minutes</strong></div>
+        <div style="background:var(--surface2);border-radius:var(--r);padding:14px;margin:16px 0;font-size:13px;color:var(--muted)">
+          ⏱ Estimated time: <strong style="color:var(--text)">${order.estMins} minutes</strong>
+          ${order.phone ? '<br>📱 SMS sent to '+order.phone : ''}
         </div>
 
         <h4 style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px">Your Order</h4>
@@ -1181,7 +1216,8 @@ const Tracker = {
 
   _renderLookup(el) {
     const u = State.currentUser;
-    const myActive = u ? (State.orders||[]).filter(o=>o.customerId===u.id && o.status!=='cancelled') : [];
+    // Auto-show if customer has active orders
+    const myActive = u ? (State.orders||[]).filter(o=>o.customerId===u.id && o.approval==='approved' && o.status!=='cancelled') : [];
     const liveMatch = State.liveOrders?.find(o => u && o.guestNum === u.guestNum);
 
     el.innerHTML = `
@@ -1249,6 +1285,7 @@ const Tracker = {
 
     if (!order && !liveOrder) { this._activeOrderId=null; this._renderLookup(el); return; }
 
+    // Start ticker
     clearInterval(this._ticker);
     if (liveOrder && !liveOrder.paused) {
       this._ticker = setInterval(()=>this._tick(), 1000);
@@ -1267,7 +1304,6 @@ const Tracker = {
     }
   },
 
-  /* ── ENHANCED LIVE TRACKER with stage detail card ── */
   _renderLiveCard(el, o, name, gn, items, restaurant, oid) {
     const stIdx = STAGES.findIndex(s=>s.key===o.stage);
     const pct = o.totalSecs>0 ? Math.min(100, Math.round((1-o.remainingSecs/o.totalSecs)*100)) : 100;
@@ -1276,47 +1312,11 @@ const Tracker = {
     const R=68, C=2*Math.PI*R, offset=C-(pct/100)*C;
     const urg = pct>=85||o.delayFlag ? '#ef4444' : pct>=60 ? '#f59e0b' : '#22c55e';
 
-    // Pipeline dots
     const stageHtml = STAGES.map((s,i)=>`
       <div class="stage-node ${i<stIdx?'done':i===stIdx?'active':''}">
         <div class="stage-dot">${i<stIdx?'✓':s.icon}</div>
         <div class="stage-label">${s.label.replace('\n','<br>')}</div>
       </div>`).join('');
-
-    // Stage timeline list — shows each stage with status & approximate time
-    const nowTs = Date.now();
-    const placedTs = new Date(o.placedAt).getTime();
-    const totalMs = o.totalSecs * 1000;
-    const stageTimeline = STAGES.map((s,i) => {
-      let statusClass, dotClass, timeStr='';
-      if (i < stIdx) {
-        statusClass='done'; dotClass='done';
-        // Estimate when each done stage passed
-        const fracStart = i / (STAGES.length-1);
-        const estTs = placedTs + fracStart * totalMs;
-        timeStr = new Date(estTs).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-      } else if (i === stIdx) {
-        statusClass='active'; dotClass='active';
-        timeStr = 'Now';
-      } else {
-        statusClass='upcoming'; dotClass='upcoming';
-        const fracFuture = (i - stIdx) * (1/(STAGES.length-1));
-        const etaSecs = o.remainingSecs * (fracFuture / Math.max(0.01, 1 - stIdx/(STAGES.length-1)));
-        const etaMins = Math.ceil(etaSecs / 60);
-        timeStr = isReady ? '' : '~'+etaMins+'m';
-      }
-      return `<div class="stage-timeline-row ${statusClass}">
-        <div class="stage-tl-dot ${dotClass}"></div>
-        <span style="font-size:16px">${s.icon}</span>
-        <div style="flex:1">
-          <div style="font-weight:${i===stIdx?'600':'400'}">${s.label.replace('\n',' ')}</div>
-          ${i===stIdx ? `<div style="font-size:11px;color:var(--muted);margin-top:1px">${s.desc}</div>` : ''}
-        </div>
-        <span class="stage-tl-time">${timeStr}</span>
-      </div>`;
-    }).join('');
-
-    const currentStage = STAGES[stIdx];
 
     el.innerHTML = `
       <div style="max-width:560px;margin:0 auto">
@@ -1335,7 +1335,6 @@ const Tracker = {
         ${!o.delayFlag&&o.stage==='plating'?'<div class="alert-banner alert-almost">🍽 Almost ready — your food is being plated!</div>':''}
         ${isReady?'<div class="alert-banner alert-ready">✅ Your order is ready! Your waiter is bringing it to you.</div>':''}
 
-        <!-- Timer ring & pipeline -->
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:16px">
           <div class="ring-wrap">
             <div class="ring-outer">
@@ -1362,49 +1361,17 @@ const Tracker = {
           <div class="stage-pipeline">${stageHtml}</div>
         </div>
 
-        <!-- Current stage detail card -->
-        <div class="stage-detail-card" style="border-color:${currentStage.color};border-left:3px solid ${currentStage.color}">
-          <div class="stage-detail-icon">${currentStage.icon}</div>
-          <div>
-            <div class="stage-detail-name" style="color:${currentStage.color}">${currentStage.label.replace('\n',' ')}</div>
-            <div class="stage-detail-desc">${currentStage.desc}</div>
-          </div>
-        </div>
-
-        <!-- Stage-by-stage timeline -->
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px">
-          <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px">Order Journey</div>
-          <div class="stage-timeline">${stageTimeline}</div>
-        </div>
-
-        <!-- Items -->
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
           <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">Your order</div>
           ${items.map(i=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--border)"><span>${i.qty}× ${i.name}</span></div>`).join('')}
         </div>
-
-        ${o.phone ? `<div class="sms-notif-banner" style="margin-top:12px">📱 SMS updates are being sent to <strong>${o.phone}</strong></div>` : ''}
       </div>`;
   },
 
   _renderOrderCard(el, order, name, gn, items, restaurant, oid) {
-    // Find live kitchen order for this order
-    const liveOrder = (State.liveOrders||[]).find(o=>o.orderId===order.id || o.id==='LT-'+order.id);
-    const stageIdx = liveOrder ? STAGES.findIndex(s=>s.key===liveOrder.stage) : 0;
-    const currentStage = liveOrder ? STAGES[stageIdx] : STAGES[0];
-
-    const stageTimeline = STAGES.map((s,i)=>{
-      const isDone = i < stageIdx;
-      const isActive = i === stageIdx;
-      return `<div class="stage-timeline-row ${isDone?'done':isActive?'active':'upcoming'}">
-        <div class="stage-tl-dot ${isDone?'done':isActive?'active':'upcoming'}"></div>
-        <span style="font-size:15px">${s.icon}</span>
-        <div style="flex:1"><div style="font-size:13px">${s.label.replace('\n',' ')}</div>
-        ${isActive?`<div style="font-size:11px;color:var(--muted);margin-top:1px">${s.desc}</div>`:''}
-        </div>
-        <span class="stage-tl-time">${isDone?'✓':isActive?'Now':'—'}</span>
-      </div>`;
-    }).join('');
+    const approval = order.approval||'pending';
+    const approvalColors = {pending:'var(--gold)',approved:'var(--green)',declined:'var(--red)'};
+    const approvalLabels = {pending:'⏳ Awaiting staff approval',approved:'✅ Order approved',declined:'❌ Order declined'};
 
     el.innerHTML = `
       <div style="max-width:560px;margin:0 auto">
@@ -1416,17 +1383,12 @@ const Tracker = {
           <button class="btn-ghost" style="padding:6px 12px;font-size:12px" onclick="Tracker._activeOrderId=null;Tracker.render()">← Back</button>
         </div>
 
-        ${order.phone ? `<div class="sms-notif-banner">📱 SMS updates will be sent to <strong>${order.phone}</strong></div>` : ''}
-
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:16px;text-align:center">
-          <div style="font-size:36px;margin-bottom:12px">${currentStage.icon}</div>
-          <div style="font-size:16px;font-weight:600" style="color:${currentStage.color}">${currentStage.label.replace('\n',' ')}</div>
-          <p style="font-size:13px;color:var(--muted);margin-top:8px">${currentStage.desc}</p>
-        </div>
-
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px">
-          <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px">Order Journey</div>
-          <div class="stage-timeline">${stageTimeline}</div>
+          <div style="font-size:36px;margin-bottom:12px">${approval==='approved'?'✅':approval==='declined'?'❌':'⏳'}</div>
+          <div style="font-size:16px;font-weight:600;color:${approvalColors[approval]}">${approvalLabels[approval]}</div>
+          ${approval==='pending'?'<p style="font-size:13px;color:var(--muted);margin-top:8px">Your waiter will confirm your order shortly.</p>':''}
+          ${approval==='approved'?'<p style="font-size:13px;color:var(--muted);margin-top:8px">Your order is being prepared!</p>':''}
+          ${approval==='declined'?'<p style="font-size:13px;color:var(--muted);margin-top:8px">Please speak to a staff member to re-order.</p>':''}
         </div>
 
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
@@ -1434,7 +1396,7 @@ const Tracker = {
           ${items.map(i=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--border)"><span>${i.qty}× ${i.name}</span><span style="color:var(--accent)">J$${(i.price*i.qty).toLocaleString()}</span></div>`).join('')}
           <div style="display:flex;justify-content:space-between;font-weight:700;padding:8px 0"><span>Total</span><span style="color:var(--accent)">J$${order.total.toLocaleString()}</span></div>
         </div>
-        <button class="btn-primary" style="margin-top:12px" onclick="App.go('restaurants')">Order More</button>
+        ${approval==='approved'?`<button class="btn-primary" style="margin-top:12px" onclick="App.go('restaurants')">Order More</button>`:''}
       </div>`;
   },
 
@@ -1457,20 +1419,17 @@ const Tracker = {
     }
   },
 
-  /* ── Notify the GUEST via SMS ── */
   _notifyAlmost(o) {
     if (o.notifiedAlmost) return;
     o.notifiedAlmost=true;
     Toast.show('⏱ Table '+o.tableNo+': almost ready!','warn');
-    // SMS to GUEST
-    if (o.phone) SMS.send(o.phone,'⏱ Hi '+o.guestName+'! Your order from '+o.restaurant+' is almost ready — about 2 mins! 🍽');
+    if (o.phone) SMS.send(o.phone,'⏱ Hi '+o.guestName+'! Your order is almost ready. ~2 min!');
     Notify.send('⏱ Order Almost Ready — '+o.id,'Table '+o.tableNo+'\nGuest #'+o.guestNum+' '+o.guestName,'order');
   },
 
   _notifyReady(o) {
     Toast.show('✅ Table '+o.tableNo+': ORDER READY!','success');
-    // SMS to GUEST
-    if (o.phone) SMS.send(o.phone,'✅ Hi '+o.guestName+'! Your order is ready and on its way to your table. Bon appétit! 🎉');
+    if (o.phone) SMS.send(o.phone,'✅ Hi '+o.guestName+'! Your order is ready. Bon appétit!');
     Notify.send('✅ Order Ready — '+o.id,'Table '+o.tableNo+'\nGuest #'+o.guestNum+' '+o.guestName,'order');
   },
 
@@ -1515,23 +1474,20 @@ const MyOrders = {
 
     el.innerHTML = myOrders.map(o=>{
       const age=Math.round((Date.now()-new Date(o.placedAt).getTime())/60000);
-      const liveO=(State.liveOrders||[]).find(lo=>lo.orderId===o.id||lo.id==='LT-'+o.id);
-      const stg=liveO?STAGES.find(s=>s.key===liveO.stage):null;
-      const stgColor=liveO?(liveO.stage==='ready'?'var(--green)':liveO.stage==='plating'?'var(--purple)':liveO.stage==='cooking'?'var(--accent2)':liveO.stage==='preparing'?'var(--accent)':'var(--blue)'):'var(--muted)';
-      const stgLabel=stg?(stg.icon+' '+stg.label.replace('\n',' ')):'📋 In Queue';
-      return `<div class="order-card" style="border-left:3px solid ${stgColor}">
+      const ap=o.approval||'pending';
+      return `<div class="order-card ${ap}">
         <div class="oc-header">
           <div><div class="oc-id">${o.id} · ${age<60?age+'m ago':Math.round(age/60)+'h ago'}</div>
           <div class="oc-rest">${o.restaurantName}</div></div>
-          <span class="oc-badge" style="background:rgba(0,0,0,.15);color:${stgColor};border:1px solid ${stgColor}40">${stgLabel}</span>
+          <span class="oc-badge ${ap}">${ap==='pending'?'⏳ Pending':ap==='approved'?'✅ Approved':'❌ Declined'}</span>
         </div>
         <div class="oc-items">${o.items.map(i=>'<span class="oc-chip">'+i.qty+'× '+i.name+'</span>').join('')}</div>
         <div class="oc-footer">
           <span class="oc-total">J$${o.total.toLocaleString()}</span>
           <button onclick="App.go('tracker');Tracker.lookupByOrderId('${o.id}')" style="background:none;border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif">📡 Track</button>
         </div>
-        ${o.phone?`<div style="margin-top:8px;font-size:11px;color:var(--muted)">📱 SMS updates → ${o.phone}</div>`:''}
-
+        ${ap==='approved'?'<div style="margin-top:10px;padding:8px 12px;background:rgba(34,197,94,.07);border-radius:8px;font-size:12px;color:var(--green)">✅ Approved — your order is being prepared!</div>':''}
+        ${ap==='declined'?'<div style="margin-top:10px;padding:8px 12px;background:rgba(239,68,68,.06);border-radius:8px;font-size:12px;color:var(--red)">❌ Declined — please speak to a staff member.</div>':''}
       </div>`;
     }).join('');
   }
@@ -1562,7 +1518,7 @@ const OrderHistory = {
    STAFF DASHBOARD
 ═══════════════════════════════════ */
 const Staff = {
-  activeTab: 'orders',
+  activeTab: 'approvals',
 
   render() { this.showTab(this.activeTab, null); },
 
@@ -1576,18 +1532,88 @@ const Staff = {
         b.classList.toggle('active', b.dataset.tab===tab);
       });
     }
-    ['orders','kitchen','notifs','sms'].forEach(t=>{
+    ['approvals','kitchen','orders','sms','notifs'].forEach(t=>{
       const el=document.getElementById('staff-'+t);
       if(el) el.style.display=t===tab?'block':'none';
     });
-    if (tab==='orders')    this.renderAllOrders();
+    if (tab==='approvals') this.renderApprovals();
     if (tab==='kitchen')   this.renderKitchen();
-    if (tab==='notifs')    this.renderNotifs();
+    if (tab==='orders')    this.renderAllOrders();
     if (tab==='sms')       this.renderSMS();
+    if (tab==='notifs')    this.renderNotifs();
+  },
+
+  renderApprovals() {
+    const el = document.getElementById('staff-approvals');
+    const orders = State.orders || [];
+    const pending  = orders.filter(o=>o.approval==='pending');
+    const actioned = orders.filter(o=>o.approval&&o.approval!=='pending');
+    const badge = document.getElementById('ap-badge');
+    if (badge){ badge.textContent=pending.length; badge.style.display=pending.length>0?'inline-flex':'none'; }
+
+    const card = (o, showBtns) => {
+      const age=Math.round((Date.now()-new Date(o.placedAt).getTime())/60000);
+      return `<div class="ap-card ${o.approval||'pending'}">
+        <div class="ap-header">
+          <div class="ap-num">${o.guestNum||'?'}</div>
+          <div class="ap-info"><div class="ap-name">${o.customer}</div>
+          <div class="ap-meta">${o.id} · ${o.restaurantName} · ${age<60?age+'m':Math.round(age/60)+'h'} ago${o.phone?' · 📱 '+o.phone:''}</div></div>
+          <div class="ap-total">J$${o.total.toLocaleString()}</div>
+        </div>
+        <div class="ap-items">${o.items.map(i=>'<span class="ap-chip">'+i.qty+'× '+i.name+'</span>').join('')}</div>
+        ${o.confirmCode?`<div style="padding:8px 16px;font-size:12px;color:var(--muted)">Confirm code: <strong style="font-family:'Syne',sans-serif;font-size:16px;color:var(--gold);letter-spacing:3px">${o.confirmCode}</strong></div>`:''}
+        <div class="ap-actions">
+          ${showBtns
+            ? `<button class="btn-approve" onclick="Staff.approve('${o.id}')">✅ Approve</button>
+               <button class="btn-decline" onclick="Staff.decline('${o.id}')">❌ Decline</button>`
+            : `<span class="ap-status ${o.approval}">${o.approval==='approved'?'✅ Approved':'❌ Declined'}</span>`}
+        </div></div>`;
+    };
+
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:8px">
+        <div><h3 style="font-size:17px">Order Approvals</h3>
+        <p style="color:var(--muted);font-size:12px;margin-top:3px">${pending.length} pending · ${actioned.length} actioned</p></div>
+        ${pending.length>0?`<button onclick="Staff.approveAll()" style="background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:var(--green);padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">✅ Approve All (${pending.length})</button>`:''}
+      </div>
+      ${pending.length===0?'<div style="text-align:center;padding:48px;color:var(--muted)"><div style="font-size:40px;margin-bottom:10px">✅</div><p>All caught up!</p></div>':''}
+      ${pending.map(o=>card(o,true)).join('')}
+      ${actioned.length>0?`<h4 style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin:20px 0 10px">Recent decisions</h4>${actioned.slice(0,8).map(o=>card(o,false)).join('')}`:''}`;
+  },
+
+  approve(orderId) {
+    const o=(State.orders||[]).find(x=>x.id===orderId); if(!o) return;
+    o.approval='approved'; o.status='confirmed';
+    State.orders=[...State.orders];
+    Toast.show('✅ '+orderId+' approved!','success');
+    Notify.send('✅ Approved: '+orderId,'Guest #'+(o.guestNum||'?')+' '+o.customer+'\nJ$'+o.total.toLocaleString(),'order');
+    if (o.phone) SMS.send(o.phone,'✅ Hi '+o.customer+'! Your order '+orderId+' has been approved and is being prepared. Est. '+o.estMins+' mins.');
+    // Add to live kitchen orders
+    this._addToKitchen(o);
+    this.renderApprovals();
+  },
+
+  decline(orderId) {
+    const o=(State.orders||[]).find(x=>x.id===orderId); if(!o) return;
+    o.approval='declined'; o.status='cancelled';
+    State.orders=[...State.orders];
+    Toast.show('❌ '+orderId+' declined.','warn');
+    Notify.send('❌ Declined: '+orderId,'Guest #'+(o.guestNum||'?')+' '+o.customer,'order');
+    if (o.phone) SMS.send(o.phone,'Hi '+o.customer+', your order '+orderId+' was declined. Please speak to a staff member.');
+    this.renderApprovals();
+  },
+
+  approveAll() {
+    const pending=(State.orders||[]).filter(o=>o.approval==='pending');
+    pending.forEach(o=>{ o.approval='approved'; o.status='confirmed'; this._addToKitchen(o); });
+    State.orders=[...State.orders];
+    Toast.show('✅ '+pending.length+' orders approved!','success');
+    Notify.send('✅ Bulk Approve',pending.length+' orders at '+new Date().toLocaleString(),'order');
+    this.renderApprovals();
   },
 
   _addToKitchen(order) {
-    const already=(State.liveOrders||[]).find(o=>o.orderId===order.id||o.id==='LT-'+order.id);
+    const already=(State.liveOrders||[]).find(o=>o.orderId===order.id);
     if (already) return;
     const live = {
       id:'LT-'+order.id, orderId:order.id,
@@ -1602,7 +1628,6 @@ const Staff = {
     State.liveOrders=[live,...(State.liveOrders||[])];
     if (!Tracker._ticker) Tracker._ticker=setInterval(()=>Tracker._tick(),1000);
   },
-
 
   renderKitchen() {
     const el=document.getElementById('staff-kitchen');
@@ -1662,17 +1687,7 @@ const Staff = {
     State.liveOrders=[...live];
     Toast.show('Table '+o.tableNo+' → '+stage,'info');
     Notify.send('Stage: '+id,''+prev+' → '+stage+' · '+o.guestName,'order');
-    // SMS the GUEST when kitchen stage changes
-    const stageObj=STAGES.find(s=>s.key===stage);
-    if (o.phone && stageObj) {
-      const msgs = {
-        preparing: '👨‍🍳 Hi '+o.guestName+'! Your order is now being prepared. Sit tight!',
-        cooking:   '🔥 Hi '+o.guestName+'! Your food is now cooking. Smells amazing!',
-        plating:   '🍽 Hi '+o.guestName+'! Your food is being plated — almost there!',
-        ready:     '✅ Hi '+o.guestName+'! Your order is ready. Enjoy your meal! 🎉',
-      };
-      if (msgs[stage]) SMS.send(o.phone, msgs[stage]);
-    }
+    if (o.phone&&stage==='cooking') SMS.send(o.phone,'🔥 Hi '+o.guestName+'! Your order is now being cooked.');
     this.renderKitchen();
   },
 
@@ -1696,8 +1711,7 @@ const Staff = {
     o.stage='ready'; o.remainingSecs=0; State.liveOrders=[...live];
     Toast.show('✅ Guest #'+o.guestNum+' order ready!','success');
     Notify.send('✅ Ready: '+id,'Guest #'+o.guestNum+' '+o.guestName,'order');
-    // SMS the GUEST that their order is ready
-    if (o.phone) SMS.send(o.phone,'✅ Hi '+o.guestName+'! Your order is ready and heading your way. Bon appétit! 🎉');
+    if (o.phone) SMS.send(o.phone,'✅ Hi '+o.guestName+'! Your order is ready. Enjoy your meal!');
     this.renderKitchen();
   },
 
@@ -1726,33 +1740,29 @@ const Staff = {
     const el=document.getElementById('staff-orders');
     const orders=State.orders||[];
     const rev=orders.reduce((a,o)=>a+o.total,0);
+    const active=orders.filter(o=>!['cancelled'].includes(o.status)).length;
     el.innerHTML=`
       <div class="stats-row">
         <div class="stat-card"><div class="stat-label">Total Orders</div><div class="stat-val">${orders.length}</div></div>
-        <div class="stat-card"><div class="stat-label">In Kitchen</div><div class="stat-val" style="color:var(--accent)">${(State.liveOrders||[]).filter(o=>o.stage!=='ready').length}</div></div>
+        <div class="stat-card"><div class="stat-label">Active</div><div class="stat-val" style="color:var(--accent)">${active}</div></div>
         <div class="stat-card"><div class="stat-label">Revenue</div><div class="stat-val" style="color:var(--green);font-size:22px">J$${rev.toLocaleString()}</div></div>
         <div class="stat-card"><div class="stat-label">Avg. Order</div><div class="stat-val" style="font-size:22px">${orders.length?'J$'+Math.round(rev/orders.length).toLocaleString():'—'}</div></div>
       </div>
-      ${orders.length===0?'<div style="text-align:center;padding:48px;color:var(--muted)"><div style="font-size:40px;margin-bottom:12px">📋</div><p>No orders yet. Orders will appear here as customers place them.</p></div>':''}
+      ${orders.length===0?'<div style="text-align:center;padding:48px;color:var(--muted)">No orders yet.</div>':''}
       ${orders.map(o=>{
         const age=Math.round((Date.now()-new Date(o.placedAt).getTime())/60000);
-        const live=(State.liveOrders||[]).find(lo=>lo.orderId===o.id||lo.id==='LT-'+o.id);
-        const stage=live?STAGES.find(s=>s.key===live.stage):STAGES[0];
-        const stageColor=live?(live.stage==='ready'?'var(--green)':live.stage==='plating'?'var(--purple)':live.stage==='cooking'?'var(--accent2)':live.stage==='preparing'?'var(--accent)':'var(--blue)'):'var(--muted)';
-        return `<div class="ap-card" style="border-left:3px solid ${stageColor}">
+        const ap=o.approval||'pending';
+        return `<div class="ap-card ${ap}" style="border-left-color:${ap==='approved'?'var(--green)':ap==='declined'?'var(--red)':'var(--gold)'}">
           <div class="ap-header">
             <div class="ap-num">${o.guestNum||'?'}</div>
-            <div class="ap-info">
-              <div class="ap-name">${o.customer} <span style="font-size:11px;font-weight:400;color:var(--muted)">Guest #${o.guestNum||'?'}</span></div>
-              <div class="ap-meta">${o.id} · ${o.restaurantName} · ${age<60?age+'m':Math.round(age/60)+'h'} ago${o.phone?' · 📱 '+o.phone:''}</div>
-            </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-              <div class="ap-total">J$${o.total.toLocaleString()}</div>
-              <div style="font-size:11px;font-weight:600;color:${stageColor};background:${stageColor.replace(')',',0.1)').replace('var(','rgba(')};padding:2px 8px;border-radius:20px">${stage?stage.icon+' '+stage.label.replace('\n',' '):'📋 Received'}</div>
-            </div>
+            <div class="ap-info"><div class="ap-name">${o.customer}</div>
+            <div class="ap-meta">${o.id} · ${o.restaurantName} · ${age<60?age+'m':Math.round(age/60)+'h'} ago</div></div>
+            <div class="ap-total">J$${o.total.toLocaleString()}</div>
           </div>
           <div class="ap-items">${o.items.map(i=>'<span class="ap-chip">'+i.qty+'× '+i.name+'</span>').join('')}</div>
-        </div>`;
+          <div class="ap-actions"><span class="ap-status ${ap}">${ap}</span>
+          ${ap==='pending'?`<button class="btn-approve" onclick="Staff.approve('${o.id}');Staff.renderAllOrders()">✅</button><button class="btn-decline" onclick="Staff.decline('${o.id}');Staff.renderAllOrders()">❌</button>`:''}
+          </div></div>`;
       }).join('')}`;
   },
 
@@ -1764,12 +1774,12 @@ const Staff = {
         <h3 style="font-size:17px">💬 SMS Log</h3>
         <span style="font-size:12px;color:var(--muted)">${log.length} messages sent</span>
       </div>
-      <div style="background:var(--surface2);border-radius:var(--r);padding:12px;font-size:11px;color:var(--muted);margin-bottom:12px;border-radius:10px">
-        📱 All SMS messages go directly to the guest's phone number. In production this integrates with Twilio, MessageBird, or Flow (Caribbean SMS). All messages shown below are simulated.
+      <div style="background:var(--surface2);border-radius:var(--r);padding:3px;margin-bottom:4px;font-size:11px;color:var(--muted);padding:12px;border-radius:10px">
+        📱 In production this integrates with Twilio, MessageBird, or Flow (Caribbean SMS). All messages shown below are simulated.
       </div>
       ${log.length===0?'<div style="text-align:center;padding:40px;color:var(--muted)">No SMS sent yet.</div>':''}
       ${log.map(s=>`<div class="sms-bubble">
-        <div class="sms-phone">To: ${s.phone}</div>
+        <div class="sms-phone">${s.phone}</div>
         ${s.message}
         <div class="sms-time">${new Date(s.sentAt).toLocaleTimeString()}</div>
       </div>`).join('')}`;
@@ -1799,17 +1809,14 @@ const Staff = {
 
 /* ═══════════════════════════════════
    LOYALTY
-   — Removed: Free Delivery
-   — Changed: Gold Status → Birthday Celebration (800 pts)
 ═══════════════════════════════════ */
 const REWARDS=[
-  {id:'r2',icon:'🍜',name:'Free Side',    desc:'One free side of your choice on your next order.',cost:200},
-  {id:'r3',icon:'💳',name:'J$500 Off',    desc:'J$500 discount applied at checkout.',cost:400},
-  {id:'r4',icon:'🌟',name:'VIP Seat',     desc:'Priority seating for 2 at any time.',cost:600},
-  {id:'r5',icon:'🎂',name:'Birthday Celebration',desc:'A complimentary dessert & birthday setup for your table.',cost:800},
-  {id:'r6',icon:'👑',name:'Platinum Perks',desc:'3× points on all orders for 30 days.',cost:1000},
+  {id:'r1',icon:'🎁',name:'Free Delivery',desc:'Free delivery on your next order.',cost:100},
+  {id:'r2',icon:'🍜',name:'Free Side',desc:'One free side of your choice.',cost:200},
+  {id:'r3',icon:'💳',name:'J$500 Off',desc:'Discount at checkout.',cost:400},
+  {id:'r4',icon:'🌟',name:'VIP Seat',desc:'Priority seating for 2.',cost:600},
+  {id:'r5',icon:'👑',name:'Gold Status',desc:'2× points on all orders.',cost:1000},
 ];
-
 const Loyalty={
   updatePts(){document.getElementById('nav-pts').textContent='⭐ '+(State.points||0)+' pts';},
   render(){
@@ -1818,9 +1825,9 @@ const Loyalty={
     el.innerHTML=`<div class="loyalty-hero">
       <div class="loy-pts">${pts}</div>
       <div style="flex:1"><h3 style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">DineFlow Points</h3>
-      <p style="font-size:13px;color:var(--muted)">Earn 1pt per J$100 spent. Redeem for rewards below.</p>
+      <p style="font-size:13px;color:var(--muted)">Earn 1pt per J$100 spent. Redeem for rewards.</p>
       <div class="tier-bar" style="margin-top:10px"><div class="tier-fill" style="width:${Math.min(pts/1000*100,100)}%"></div></div>
-      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:3px"><span>0</span><span>Silver: 200</span><span>Gold: 600</span><span>Platinum: 1000</span></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:3px"><span>0</span><span>Gold: 500</span><span>Platinum: 1000</span></div></div>
     </div>
     <h3 style="font-size:18px;margin-bottom:16px">Redeem Rewards</h3>
     <div class="rewards-grid">${REWARDS.map(r=>`<div class="reward-card">
@@ -1828,7 +1835,7 @@ const Loyalty={
       <div class="reward-name">${r.name}</div>
       <div class="reward-desc">${r.desc}</div>
       <div class="reward-cost">⭐ ${r.cost} pts</div>
-      <button class="redeem-btn" ${pts<r.cost?'disabled':''} onclick="Loyalty.redeem('${r.id}')">${pts>=r.cost?'Redeem':'Need '+(r.cost-pts)+' more'}</button>
+      <button class="redeem-btn" ${pts<r.cost?'disabled':''} onclick="Loyalty.redeem('${r.id}')">${pts>=r.cost?'Redeem':'Not enough'}</button>
     </div>`).join('')}</div>`;
   },
   redeem(id){
@@ -1836,9 +1843,6 @@ const Loyalty={
     State.points=(State.points||0)-r.cost;
     this.updatePts(); this.render();
     Toast.show('🎉 "'+r.name+'" redeemed!','success');
-    // SMS the guest their reward confirmation
-    const u=State.currentUser;
-    if(u?.phone) SMS.send(u.phone,'🎉 Hi '+u.name+'! You just redeemed "'+r.name+'" on DineFlow. Show this message to your waiter to claim your reward!');
   }
 };
 
@@ -1874,20 +1878,14 @@ const ResModal={
     State.reservations=[{id,restaurant:rest,customer:u.name,date,time,party:2,status:'confirmed'},...(State.reservations||[])];
     this.close();
     Toast.show('📅 Table booked at '+rest+' for '+date,'success');
-    // SMS the guest their reservation
-    if(u.phone) SMS.send(u.phone,'📅 Hi '+u.name+'! Your table at '+rest+' is confirmed for '+date+' at '+time+'. See you then!');
   }
 };
 
 /* ═══════════════════════════════════
    INIT
 ═══════════════════════════════════ */
+// Restore session if persisted
 (function init() {
-  // Populate email display elements at runtime (avoids Cloudflare email obfuscation)
-  const hintEl = document.getElementById('staff-modal-email-hint');
-  if (hintEl) hintEl.textContent = ADMIN_EMAIL;
-
-  // Restore session if persisted
   const u = State.currentUser;
   if (u && u.role === 'customer') {
     document.getElementById('login-overlay').style.display = 'none';
@@ -1908,7 +1906,6 @@ const ResModal={
 
   Nav._update();
 })();
-
 </script>
 </body>
 </html>
