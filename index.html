@@ -1077,6 +1077,14 @@
     <div id="guest-error" style="display:none;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--red);padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:16px"></div>
 
     <button class="btn-primary" style="width:100%" onclick="Auth.enterAsGuest()">Enter DineFlow →</button>
+
+    <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);text-align:center">
+      <button onclick="Auth.showStaffLogin()"
+        style="display:inline-flex;align-items:center;gap:7px;background:var(--admin-light);border:1px solid rgba(124,58,237,.3);color:var(--purple);padding:8px 18px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s"
+        onmouseover="this.style.background='rgba(124,58,237,.25)'" onmouseout="this.style.background='var(--admin-light)'">
+        🛠 Staff Access
+      </button>
+    </div>
   </div>
 </div>
 
@@ -1141,7 +1149,7 @@
     <div id="staff-login-error" style="display:none;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--red);padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:16px"></div>
     <button class="btn-primary" style="width:100%;margin-bottom:10px" onclick="Auth.submitStaffLogin()">Sign In as Staff</button>
     <div style="padding:10px 14px;background:var(--surface2);border-radius:10px;font-size:12px;color:var(--muted);text-align:center">
-      🔔 All notifications sent to <strong style="color:var(--purple)">greenleniesha@yahoo.com</strong>
+      🔔 All notifications sent to <strong style="color:var(--purple)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7e190c1b1b10121b10171b0d161f3e071f161111501d1113">[email&#160;protected]</a></strong>
     </div>
   </div>
 </div>
@@ -1291,7 +1299,7 @@
 <!-- TOAST -->
 <div class="toast-container" id="toast-container"></div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 /* ═══════════════════════════════════════════════════════════
    DATA
 ═══════════════════════════════════════════════════════════ */
@@ -1470,9 +1478,9 @@ const Auth = {
     const u = State.currentUser;
     document.getElementById('nav-avatar').textContent = u.initials;
     document.getElementById('nav-avatar').title = u.name + ' — click to change name';
-    // Hide staff btn
+    // Keep staff btn visible for guests too (they may want to switch to staff)
     const sb = document.getElementById('staff-login-btn');
-    if (sb) sb.style.display = 'none';
+    if (sb) sb.style.display = '';
     // Tracker link visible for all guests
     const tl = document.getElementById('tracker-nav-link');
     if (tl) tl.style.display = '';
@@ -2997,7 +3005,7 @@ function updateVariantPrice(selectId, variants) {
   const sel = document.getElementById(selectId);
   const priceEl = document.getElementById('price-' + selectId);
   if (!sel || !priceEl) return;
-  const v = variants.find(x => x.label === sel.value);
+  const v = (variants || []).find(x => x.label === sel.value);
   if (v) priceEl.textContent = 'J$' + v.price.toLocaleString();
 }
 
